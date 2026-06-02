@@ -100,6 +100,34 @@ const sfx: Record<string, SfxDef> = {
       { note: 'E4', dur: '8n', time: 0.12 },
     ],
   },
+  powerup: {
+    wave: 'square',
+    volumeDb: -13,
+    notes: [
+      { note: 'E5', dur: '16n', time: 0 },
+      { note: 'B5', dur: '16n', time: 0.05 },
+      { note: 'E6', dur: '8n', time: 0.1 },
+    ],
+  },
+  enemyShoot: {
+    wave: 'square',
+    volumeDb: -24,
+    notes: [{ note: 'A3', dur: '32n' }],
+  },
+  bigHit: {
+    wave: 'square',
+    volumeDb: -20,
+    notes: [{ note: 'C4', dur: '32n' }],
+  },
+  bigBoom: {
+    wave: 'noise',
+    volumeDb: -7,
+    notes: [
+      { note: 'E2', dur: '16n', time: 0 },
+      { note: 'C2', dur: '8n', time: 0.06 },
+      { note: 'E1', dur: '4n', time: 0.14 },
+    ],
+  },
   gameover: {
     wave: 'sawtooth',
     volumeDb: -9,

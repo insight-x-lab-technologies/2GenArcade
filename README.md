@@ -163,7 +163,9 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
 - 🐍 **Snake Coil** — original snake-genre game; collect orbs, chain combos,
   and fill *Surge* to phase through yourself at 2× points.
 - 🛩️ **River Run** — original vertical scrolling shooter; weave a narrowing
-  neon canyon, blast drones, manage fuel, and *Boost* for distance.
+  neon canyon through shifting biomes (city/forest/mountains/ocean/space) and a
+  day→night cycle, blast varied ships (small scouts up to shooting heavies),
+  refuel at big destructible tanks, grab 10 power-ups, and chase 30 trophies.
 - 🏎️ **Road Burner** — original lane-based racing/dodge; weave a curving neon
   highway through bikes/cars/trucks/rigs, graze traffic to charge *Burn* and
   auto-ignite *Nitro*. Shifting terrains (asphalt/rain/mud/snow) change speed and

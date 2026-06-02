@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BIOME_SEGMENT,
+  biomeAt,
+  biomeForSegment,
   channelAt,
   circleHit,
+  DAY_LEG,
+  ENEMIES,
+  ENEMY_KINDS,
   enemySpawnInterval,
   FIELD_W,
   fuelDrain,
@@ -11,8 +17,13 @@ import {
   insideChannel,
   MAX_SPEED,
   MIN_SPEED,
+  pickEnemyKind,
+  pickPowerKind,
+  POWER_KINDS,
+  POWERS,
   scoreFromDistance,
   speedFor,
+  timeOfDayAt,
   worldYAt,
 } from './logic';
 
@@ -69,7 +80,7 @@ describe('fuel + spawns', () => {
 
   it('spawns enemies more often the further you go, with a floor', () => {
     expect(enemySpawnInterval(0)).toBeGreaterThan(enemySpawnInterval(5000));
-    expect(enemySpawnInterval(1e9)).toBe(0.5);
+    expect(enemySpawnInterval(1e9)).toBe(0.42);
   });
 });
 
@@ -84,5 +95,74 @@ describe('scoreFromDistance', () => {
   it('combines floored distance with bonuses', () => {
     expect(scoreFromDistance(1234.7, 0)).toBe(1234);
     expect(scoreFromDistance(1000, 360)).toBe(1360);
+  });
+});
+
+describe('biomes', () => {
+  it('opens in the city and cycles through all five deterministically', () => {
+    expect(biomeForSegment(0)).toBe('city');
+    expect(biomeAt(0).id).toBe('city');
+    const seen = new Set<string>();
+    for (let i = 0; i < 5; i += 1) seen.add(biomeForSegment(i));
+    expect(seen).toEqual(new Set(['city', 'forest', 'mountains', 'ocean', 'space']));
+  });
+
+  it('reports progress within the current biome segment', () => {
+    const a = biomeAt(BIOME_SEGMENT * 2.25);
+    expect(a.index).toBe(2);
+    expect(a.t).toBeCloseTo(0.25);
+  });
+});
+
+describe('timeOfDayAt', () => {
+  it('starts in daylight and reaches night mid-cycle', () => {
+    expect(timeOfDayAt(0).phase).toBe('day');
+    expect(timeOfDayAt(0).darkness).toBeCloseTo(0);
+    const night = timeOfDayAt(DAY_LEG);
+    expect(night.phase).toBe('night');
+    expect(night.darkness).toBeCloseTo(1);
+  });
+
+  it('keeps darkness within [0,1] across a long flight', () => {
+    for (let d = 0; d < 30000; d += 131) {
+      const k = timeOfDayAt(d).darkness;
+      expect(k).toBeGreaterThanOrEqual(0);
+      expect(k).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('enemies', () => {
+  it('bigger ships take more hits and are worth more', () => {
+    expect(ENEMIES.dread.hp).toBeGreaterThan(ENEMIES.drone.hp);
+    expect(ENEMIES.dread.points).toBeGreaterThan(ENEMIES.drone.points);
+    expect(ENEMIES.cruiser.big).toBe(true);
+    expect(ENEMIES.scout.big).toBe(false);
+  });
+
+  it('only spawns scouts/drones early; shooters and heavies come later', () => {
+    for (let r = 0; r < 1; r += 0.05) {
+      const early = pickEnemyKind(0, r);
+      expect(ENEMIES[early].minDistance).toBe(0);
+      expect(ENEMIES[early].shoots).toBe(false);
+    }
+    const lateKinds = new Set<string>();
+    for (let r = 0; r < 1; r += 0.01) lateKinds.add(pickEnemyKind(5000, r));
+    expect([...lateKinds].some((k) => ENEMIES[k as keyof typeof ENEMIES].shoots)).toBe(true);
+  });
+
+  it('pickEnemyKind always returns a valid kind', () => {
+    for (let r = 0; r < 1; r += 0.03) expect(ENEMY_KINDS).toContain(pickEnemyKind(2000, r));
+  });
+});
+
+describe('power-ups', () => {
+  it('defines all 10 kinds with a unique trophy each', () => {
+    expect(POWER_KINDS).toHaveLength(10);
+    expect(new Set(POWER_KINDS.map((k) => POWERS[k].trophyId)).size).toBe(10);
+  });
+
+  it('pickPowerKind always returns a valid kind across the range', () => {
+    for (let r = 0; r < 1; r += 0.017) expect(POWER_KINDS).toContain(pickPowerKind(r));
   });
 });

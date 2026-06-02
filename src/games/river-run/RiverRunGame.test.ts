@@ -71,7 +71,7 @@ describe('RiverRunGame (integration)', () => {
     game.destroy();
   });
 
-  it('ends the run (crash or out of fuel) with numeric score and stats', () => {
+  it('ends the run (crash or out of fuel) with numeric score and rich stats', () => {
     const { ctx, events } = makeContext();
     const game = new RiverRunGame();
     game.init(ctx);
@@ -84,10 +84,26 @@ describe('RiverRunGame (integration)', () => {
     expect(over).toBeDefined();
     const payload = over!.payload as GameEventMap['gameover'];
     expect(typeof payload.score).toBe('number');
-    expect(payload.stats).toHaveProperty('distance');
-    expect(payload.stats).toHaveProperty('kills');
-    expect(payload.stats).toHaveProperty('fuel');
-    expect(payload.stats).toHaveProperty('boosts');
+    for (const key of ['distance', 'kills', 'bigKills', 'fuel', 'boosts', 'powerups', 'night', 'space']) {
+      expect(payload.stats).toHaveProperty(key);
+    }
+    game.destroy();
+  });
+
+  it('survives a long random flight across biomes/day-cycle without throwing', () => {
+    const { ctx, held } = makeContext();
+    const game = new RiverRunGame();
+    game.init(ctx);
+    expect(() => {
+      for (let i = 0; i < 4000; i += 1) {
+        held.clear();
+        if (i % 100 < 50) held.add('right');
+        else held.add('left');
+        held.add('up'); // keep refuelling pressure low via boost? still drains — fine
+        game.update(1 / 60);
+        if (i % 7 === 0) game.render((i % 60) / 60);
+      }
+    }).not.toThrow();
     game.destroy();
   });
 });
