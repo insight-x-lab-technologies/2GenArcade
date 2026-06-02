@@ -1,0 +1,126 @@
+/* Self-hosted fonts (offline-safe, cached by the service worker). */
+@import '@fontsource/silkscreen/400.css';
+@import '@fontsource/silkscreen/700.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: theme('colors.night.900');
+    color: theme('colors.ink');
+    font-family: theme('fontFamily.mono');
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* "Sunset" atmosphere: amber horizon glow rising from the bottom into the
+     indigo night, plus a faint violet bloom up top. Painted once on <body>. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(120% 60% at 50% 118%, rgba(255, 140, 66, 0.28), transparent 60%),
+      radial-gradient(90% 50% at 50% 116%, rgba(255, 93, 115, 0.18), transparent 55%),
+      radial-gradient(80% 60% at 15% -10%, rgba(176, 108, 255, 0.16), transparent 60%),
+      linear-gradient(180deg, theme('colors.night.800'), theme('colors.night.900'));
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Respect the platform: kill all motion when the user asks for it. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Subtle CRT overlay: scanlines + vignette. Toggled by .crt-on on a wrapper,
+     and fully disabled under reduced-motion via the rule below. */
+  .crt-overlay {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 240ms ease;
+  }
+
+  .crt-on .crt-overlay {
+    opacity: 1;
+  }
+
+  .crt-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.16) 3px,
+      rgba(0, 0, 0, 0.16) 3px
+    );
+  }
+
+  .crt-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 120% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crt-overlay {
+      display: none;
+    }
+  }
+
+  .text-neon-amber {
+    color: theme('colors.amber.glow');
+    text-shadow:
+      0 0 6px rgba(255, 179, 71, 0.55),
+      0 0 18px rgba(255, 140, 66, 0.35);
+  }
+
+  .text-neon-violet {
+    color: theme('colors.violet.DEFAULT');
+    text-shadow: 0 0 10px rgba(176, 108, 255, 0.5);
+  }
+
+  /* Thin scrollbars that match the night theme. */
+  .scroll-night {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.violet.deep') transparent;
+  }
+}
