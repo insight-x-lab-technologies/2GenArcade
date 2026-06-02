@@ -1,0 +1,28 @@
+export {
+  getLocalStore,
+  setLocalStore,
+  IdbStore,
+  MemoryStore,
+  type LocalStore,
+} from './storage';
+export { checkScorePlausibility, type PlausibilityResult } from './anticheat';
+export { supabaseBackend, isSupabaseConfigured } from './supabase';
+export {
+  LeaderboardService,
+  getLeaderboardService,
+  rankInList,
+  type LeaderboardBackend,
+  type SubmitInput,
+  type SubmitResult,
+} from './leaderboard';
+export {
+  MockEntitlementsProvider,
+  StripeEntitlementsProvider,
+  StoreIapEntitlementsProvider,
+  getEntitlementsProvider,
+  setEntitlementsProvider,
+  type EntitlementsProvider,
+  type ProviderConfig,
+  type PurchaseResult,
+} from './entitlements';
+export { TrophyService, getTrophyService } from './trophies';
