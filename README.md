@@ -158,11 +158,14 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
 
 ## Roadmap — the 20-game catalog
 
-**Built:** 🟧 **Block Drop** (falling-shard puzzle, *Overdrive* combo mechanic).
+**Built:**
+- 🟧 **Block Drop** — falling-shard puzzle with the *Overdrive* combo mechanic.
+- 🐍 **Snake Coil** — original snake-genre game; collect orbs, chain combos,
+  and fill *Surge* to phase through yourself at 2× points.
 
 **Planned** (contract ready, not yet implemented): Star Defender, Road Burner,
-River Run, Snake Coil, Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel,
-Bug Blaster, Asteroid Drift, Paddle Clash, Match Cascade, Pipe Flow, Light Flip,
+River Run, Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
+Asteroid Drift, Paddle Clash, Match Cascade, Pipe Flow, Light Flip,
 Sliding Tiles, Sky Hopper, Cave Flyer, Tower Stack, Dodge Storm.
 
 Packs: **Base** (free) · **Classics** · **Puzzle** · **Action** (paid, mock
