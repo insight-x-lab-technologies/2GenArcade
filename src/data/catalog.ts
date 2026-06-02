@@ -24,7 +24,6 @@ const PLANNED: Array<{ id: string; thumbnail: string; accent: AccentColor }> = [
   { id: 'star-defender', thumbnail: '👾', accent: 'violet' },
   { id: 'road-burner', thumbnail: '🏎️', accent: 'coral' },
   { id: 'river-run', thumbnail: '🛩️', accent: 'amber' },
-  { id: 'snake-coil', thumbnail: '🐍', accent: 'violet' },
   { id: 'brick-bounce', thumbnail: '🧱', accent: 'coral' },
   { id: 'maze-muncher', thumbnail: '😋', accent: 'amber' },
   { id: 'frog-crossing', thumbnail: '🐸', accent: 'violet' },
@@ -51,6 +50,15 @@ export const CATALOG: CatalogGame[] = [
     accent: 'amber',
     status: 'available',
     load: () => import('@/games/block-drop').then((m) => m.blockDropFactory),
+  },
+  {
+    id: 'snake-coil',
+    packId: 'pack-base',
+    titleKey: titleKey('snake-coil'),
+    thumbnail: '🐍',
+    accent: 'violet',
+    status: 'available',
+    load: () => import('@/games/snake-coil').then((m) => m.snakeCoilFactory),
   },
   ...PLANNED.map<CatalogGame>((g) => ({
     id: g.id,

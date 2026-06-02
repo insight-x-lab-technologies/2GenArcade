@@ -43,6 +43,7 @@ export const en: AppResources = {
     gameplayScore: 'Score',
     controlLeft: 'Move left',
     controlRight: 'Move right',
+    controlUp: 'Move up',
     controlDown: 'Move down',
     controlRotate: 'Rotate',
     controlDrop: 'Drop',
@@ -120,6 +121,8 @@ export const en: AppResources = {
     gameDescriptions: {
       'block-drop':
         'Stack glowing falling blocks, clear lines, and hold Overdrive to multiply your points.',
+      'snake-coil':
+        'Guide the energy Coil around the grid, collect orbs, and fill Surge to phase through yourself and double your points.',
     },
     packs: {
       'pack-base': {
@@ -154,6 +157,20 @@ export const en: AppResources = {
       overdrive: { name: 'Overdriven', description: 'Trigger Overdrive once.' },
       survivor: { name: 'Survivor', description: 'Reach level 8.' },
       highScore: { name: 'Arcade legend', description: 'Score 20,000 points.' },
+    },
+  },
+  snakeCoil: {
+    hudLevel: 'Level',
+    hudCombo: 'Combo',
+    hudSurge: 'Surge',
+    howToPlay:
+      'Swipe or use the d-pad to turn the Coil. Collect orbs to grow and score; chain orbs to build a combo. Prism orbs are worth more but expire fast. Filling Surge lets you phase through your own body and doubles points for a few seconds. Hitting a wall or yourself ends the run.',
+    trophies: {
+      firstOrb: { name: 'First spark', description: 'Collect your first orb.' },
+      combo: { name: 'On fire', description: 'Reach a 5-orb combo.' },
+      surge: { name: 'Surged', description: 'Trigger Surge once.' },
+      longCoil: { name: 'Long coil', description: 'Grow to length 25.' },
+      highScore: { name: 'Grid legend', description: 'Score 5,000 points.' },
     },
   },
 };

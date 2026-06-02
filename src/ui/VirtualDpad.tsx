@@ -6,12 +6,14 @@ interface VirtualDpadProps {
   onDirection: (direction: Direction, phase: 'press' | 'release') => void;
   onButton: (id: string, phase: 'press' | 'release') => void;
   /** i18n'd accessible labels. */
-  labels: { left: string; right: string; down: string; rotate: string; drop: string };
+  labels: { left: string; right: string; up: string; down: string; rotate: string; drop: string };
+  /** 'tetris' = move row + rotate/drop actions (default). 'cross' = 4-way pad. */
+  layout?: 'tetris' | 'cross';
 }
 
 /** On-screen controls for portrait play. Each target is >= 56px (a11y).
  *  Directional presses are held (press/release); action buttons fire on press. */
-export function VirtualDpad({ onDirection, onButton, labels }: VirtualDpadProps) {
+export function VirtualDpad({ onDirection, onButton, labels, layout = 'tetris' }: VirtualDpadProps) {
   const dir = (direction: Direction) => ({
     onPointerDown: (e: ReactPointerEvent) => {
       e.preventDefault();
@@ -35,6 +37,24 @@ export function VirtualDpad({ onDirection, onButton, labels }: VirtualDpadProps)
       onButton(id, 'release');
     },
   });
+
+  if (layout === 'cross') {
+    return (
+      <div className="flex select-none justify-center px-2" style={{ touchAction: 'none' }}>
+        <div className="grid grid-cols-3 grid-rows-3 gap-2">
+          <span aria-hidden />
+          <PadKey label={labels.up} glyph="▲" accent="violet" {...dir('up')} />
+          <span aria-hidden />
+          <PadKey label={labels.left} glyph="◀" accent="violet" {...dir('left')} />
+          <span aria-hidden />
+          <PadKey label={labels.right} glyph="▶" accent="violet" {...dir('right')} />
+          <span aria-hidden />
+          <PadKey label={labels.down} glyph="▼" accent="violet" {...dir('down')} />
+          <span aria-hidden />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

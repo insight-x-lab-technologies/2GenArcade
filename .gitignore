@@ -13,4 +13,4 @@ build/
 # Local dev server runtime artifacts (webapplab http-server) + smoke output
 scripts/.webapplab-http-server.*
 scripts/webapplab-http-server.log
-scripts/smoke-gameplay.png
+scripts/smoke-*.png

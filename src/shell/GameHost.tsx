@@ -7,6 +7,7 @@ import type {
   GameModule,
   GameStorage,
   Direction,
+  ControlScheme,
 } from '@/types';
 import { CanvasManager, FixedTimestepLoop, PointerInputAdapter } from '@/engine';
 import { GameAudioBus, getAudioEngine } from '@/audio';
@@ -49,6 +50,7 @@ export function GameHost({ game, onExit }: GameHostProps) {
   const [loading, setLoading] = useState(true);
   const [paused, setPaused] = useState(false);
   const [hudScore, setHudScore] = useState(0);
+  const [controlScheme, setControlScheme] = useState<ControlScheme>('swipe');
 
   const reducedMotion = useArcadeStore((s) => s.reducedMotion);
   const handleGameOver = useArcadeStore((s) => s.handleGameOver);
@@ -87,6 +89,7 @@ export function GameHost({ game, onExit }: GameHostProps) {
     const setup = async () => {
       const factory = await game.load!();
       if (cancelled) return;
+      setControlScheme(factory.meta.controlScheme);
 
       const initialStorage =
         (await getLocalStore().kvGet<Record<string, unknown>>(`gameStorage:${game.id}`)) ?? {};
@@ -234,11 +237,13 @@ export function GameHost({ game, onExit }: GameHostProps) {
       {/* On-screen controls */}
       <div className="pb-[max(0.75rem,var(--safe-bottom))] pt-2">
         <VirtualDpad
+          layout={controlScheme === 'dpad' ? 'cross' : 'tetris'}
           onDirection={dispatchDir}
           onButton={dispatchBtn}
           labels={{
             left: t('controlLeft'),
             right: t('controlRight'),
+            up: t('controlUp'),
             down: t('controlDown'),
             rotate: t('controlRotate'),
             drop: t('controlDrop'),

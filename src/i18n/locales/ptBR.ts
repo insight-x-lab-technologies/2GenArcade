@@ -41,6 +41,7 @@ export const ptBR = {
     gameplayScore: 'Pontos',
     controlLeft: 'Mover para a esquerda',
     controlRight: 'Mover para a direita',
+    controlUp: 'Mover para cima',
     controlDown: 'Descer',
     controlRotate: 'Girar',
     controlDrop: 'Soltar',
@@ -118,6 +119,8 @@ export const ptBR = {
     gameDescriptions: {
       'block-drop':
         'Encaixe blocos luminosos que caem, limpe linhas e segure a Sobrecarga para multiplicar pontos.',
+      'snake-coil':
+        'Guie a Espiral de energia pela grade, colete orbes e encha a Descarga para atravessar a si mesmo e dobrar os pontos.',
     },
     packs: {
       'pack-base': {
@@ -152,6 +155,20 @@ export const ptBR = {
       overdrive: { name: 'Sobrecarregado', description: 'Ative a Sobrecarga uma vez.' },
       survivor: { name: 'Sobrevivente', description: 'Alcance o nível 8.' },
       highScore: { name: 'Lenda do fliperama', description: 'Faça 20.000 pontos.' },
+    },
+  },
+  snakeCoil: {
+    hudLevel: 'Nível',
+    hudCombo: 'Combo',
+    hudSurge: 'Descarga',
+    howToPlay:
+      'Arraste ou use o direcional para virar a Espiral. Colete orbes para crescer e pontuar; encadeie orbes para somar combo. Orbes-prisma valem mais, mas duram pouco. Encher a Descarga atravessa seu próprio corpo e dobra os pontos por alguns segundos. Bater nas paredes ou em si mesmo encerra o jogo.',
+    trophies: {
+      firstOrb: { name: 'Primeira faísca', description: 'Colete seu primeiro orbe.' },
+      combo: { name: 'Em chamas', description: 'Alcance um combo de 5.' },
+      surge: { name: 'Descarregado', description: 'Ative a Descarga uma vez.' },
+      longCoil: { name: 'Espiral longa', description: 'Cresça até 25 de comprimento.' },
+      highScore: { name: 'Lenda da grade', description: 'Faça 5.000 pontos.' },
     },
   },
 };
