@@ -23,7 +23,6 @@ const titleKey = (id: string): string => `catalog:gameTitles.${id}`;
 const PLANNED: Array<{ id: string; thumbnail: string; accent: AccentColor }> = [
   { id: 'star-defender', thumbnail: '👾', accent: 'violet' },
   { id: 'road-burner', thumbnail: '🏎️', accent: 'coral' },
-  { id: 'river-run', thumbnail: '🛩️', accent: 'amber' },
   { id: 'brick-bounce', thumbnail: '🧱', accent: 'coral' },
   { id: 'maze-muncher', thumbnail: '😋', accent: 'amber' },
   { id: 'frog-crossing', thumbnail: '🐸', accent: 'violet' },
@@ -59,6 +58,15 @@ export const CATALOG: CatalogGame[] = [
     accent: 'violet',
     status: 'available',
     load: () => import('@/games/snake-coil').then((m) => m.snakeCoilFactory),
+  },
+  {
+    id: 'river-run',
+    packId: 'pack-base',
+    titleKey: titleKey('river-run'),
+    thumbnail: '🛩️',
+    accent: 'amber',
+    status: 'available',
+    load: () => import('@/games/river-run').then((m) => m.riverRunFactory),
   },
   ...PLANNED.map<CatalogGame>((g) => ({
     id: g.id,

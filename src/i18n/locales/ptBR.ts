@@ -121,6 +121,8 @@ export const ptBR = {
         'Encaixe blocos luminosos que caem, limpe linhas e segure a Sobrecarga para multiplicar pontos.',
       'snake-coil':
         'Guie a Espiral de energia pela grade, colete orbes e encha a Descarga para atravessar a si mesmo e dobrar os pontos.',
+      'river-run':
+        'Pilote o planador por um cânion de neon que se estreita, destrua drones, abasteça e acelere para somar distância.',
     },
     packs: {
       'pack-base': {
@@ -169,6 +171,20 @@ export const ptBR = {
       surge: { name: 'Descarregado', description: 'Ative a Descarga uma vez.' },
       longCoil: { name: 'Espiral longa', description: 'Cresça até 25 de comprimento.' },
       highScore: { name: 'Lenda da grade', description: 'Faça 5.000 pontos.' },
+    },
+  },
+  riverRun: {
+    hudFuel: 'Combustível',
+    hudDistance: 'Distância',
+    hudBoost: 'Turbo',
+    howToPlay:
+      'Use o direcional (ou as setas) para desviar pelo cânion: esquerda/direita pilotam, segure cima para o turbo e baixo para frear. O tiro é automático. Destrua drones, pegue células de combustível para não ficar sem energia e evite as paredes e os inimigos. O cânion estreita conforme você avança.',
+    trophies: {
+      firstKill: { name: 'Primeiro abate', description: 'Destrua seu primeiro drone.' },
+      ace: { name: 'Ás dos céus', description: 'Destrua 25 drones em uma partida.' },
+      afterburner: { name: 'Pós-combustão', description: 'Ative o turbo uma vez.' },
+      voyager: { name: 'Viajante', description: 'Percorra 2.000 m.' },
+      highScore: { name: 'Lenda do cânion', description: 'Faça 8.000 pontos.' },
     },
   },
 };

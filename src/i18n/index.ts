@@ -7,7 +7,7 @@ import { en } from './locales/en';
 export const SUPPORTED_LANGUAGES = ['pt-BR', 'en'] as const;
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
-export const NAMESPACES = ['common', 'shell', 'catalog', 'blockDrop', 'snakeCoil'] as const;
+export const NAMESPACES = ['common', 'shell', 'catalog', 'blockDrop', 'snakeCoil', 'riverRun'] as const;
 
 const resources = {
   'pt-BR': ptBR,

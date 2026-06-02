@@ -123,6 +123,8 @@ export const en: AppResources = {
         'Stack glowing falling blocks, clear lines, and hold Overdrive to multiply your points.',
       'snake-coil':
         'Guide the energy Coil around the grid, collect orbs, and fill Surge to phase through yourself and double your points.',
+      'river-run':
+        'Fly the skimmer up a narrowing neon canyon, blast drones, grab fuel, and boost to rack up distance.',
     },
     packs: {
       'pack-base': {
@@ -171,6 +173,20 @@ export const en: AppResources = {
       surge: { name: 'Surged', description: 'Trigger Surge once.' },
       longCoil: { name: 'Long coil', description: 'Grow to length 25.' },
       highScore: { name: 'Grid legend', description: 'Score 5,000 points.' },
+    },
+  },
+  riverRun: {
+    hudFuel: 'Fuel',
+    hudDistance: 'Distance',
+    hudBoost: 'Boost',
+    howToPlay:
+      'Use the d-pad (or arrow keys) to weave through the canyon: left/right steer, hold up to boost and down to brake. Fire is automatic. Destroy drones, grab fuel cells so you never run dry, and avoid the walls and enemies. The canyon narrows as you go.',
+    trophies: {
+      firstKill: { name: 'First kill', description: 'Destroy your first drone.' },
+      ace: { name: 'Sky ace', description: 'Destroy 25 drones in one run.' },
+      afterburner: { name: 'Afterburner', description: 'Trigger boost once.' },
+      voyager: { name: 'Voyager', description: 'Travel 2,000 m.' },
+      highScore: { name: 'Canyon legend', description: 'Score 8,000 points.' },
     },
   },
 };

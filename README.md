@@ -162,9 +162,11 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
 - 🟧 **Block Drop** — falling-shard puzzle with the *Overdrive* combo mechanic.
 - 🐍 **Snake Coil** — original snake-genre game; collect orbs, chain combos,
   and fill *Surge* to phase through yourself at 2× points.
+- 🛩️ **River Run** — original vertical scrolling shooter; weave a narrowing
+  neon canyon, blast drones, manage fuel, and *Boost* for distance.
 
 **Planned** (contract ready, not yet implemented): Star Defender, Road Burner,
-River Run, Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
+Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
 Asteroid Drift, Paddle Clash, Match Cascade, Pipe Flow, Light Flip,
 Sliding Tiles, Sky Hopper, Cave Flyer, Tower Stack, Dodge Storm.
 
