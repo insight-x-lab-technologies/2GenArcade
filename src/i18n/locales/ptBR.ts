@@ -39,6 +39,11 @@ export const ptBR = {
     gameplayQuit: 'Sair',
     gameplayPause: 'Pausar',
     gameplayScore: 'Pontos',
+    controlLeft: 'Mover para a esquerda',
+    controlRight: 'Mover para a direita',
+    controlDown: 'Descer',
+    controlRotate: 'Girar',
+    controlDrop: 'Soltar',
     gameoverTitle: 'Fim de jogo',
     gameoverScore: 'Sua pontuação',
     gameoverBest: 'Recorde',
@@ -84,15 +89,35 @@ export const ptBR = {
     nicknamePromptTitle: 'Escolha um apelido',
     nicknamePromptHint: 'Aparece no ranking. Você pode mudar nos Ajustes.',
     syncedToast: '{{count}} pontuação(ões) sincronizada(s)',
+    trophyUnlocked: '🏆 Troféu: {{name}}',
     backendOfflineNote: 'Ranking online não configurado — usando dados locais.',
   },
   catalog: {
-    games: {
-      'block-drop': {
-        title: 'Block Drop',
-        description:
-          'Encaixe blocos luminosos que caem, limpe linhas e segure a Sobrecarga para multiplicar pontos.',
-      },
+    gameTitles: {
+      'block-drop': 'Block Drop',
+      'star-defender': 'Star Defender',
+      'road-burner': 'Road Burner',
+      'river-run': 'River Run',
+      'snake-coil': 'Snake Coil',
+      'brick-bounce': 'Brick Bounce',
+      'maze-muncher': 'Maze Muncher',
+      'frog-crossing': 'Frog Crossing',
+      'cannon-duel': 'Cannon Duel',
+      'bug-blaster': 'Bug Blaster',
+      'asteroid-drift': 'Asteroid Drift',
+      'paddle-clash': 'Paddle Clash',
+      'match-cascade': 'Match Cascade',
+      'pipe-flow': 'Pipe Flow',
+      'light-flip': 'Light Flip',
+      'sliding-tiles': 'Sliding Tiles',
+      'sky-hopper': 'Sky Hopper',
+      'cave-flyer': 'Cave Flyer',
+      'tower-stack': 'Tower Stack',
+      'dodge-storm': 'Dodge Storm',
+    },
+    gameDescriptions: {
+      'block-drop':
+        'Encaixe blocos luminosos que caem, limpe linhas e segure a Sobrecarga para multiplicar pontos.',
     },
     packs: {
       'pack-base': {

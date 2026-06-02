@@ -41,6 +41,11 @@ export const en: AppResources = {
     gameplayQuit: 'Quit',
     gameplayPause: 'Pause',
     gameplayScore: 'Score',
+    controlLeft: 'Move left',
+    controlRight: 'Move right',
+    controlDown: 'Move down',
+    controlRotate: 'Rotate',
+    controlDrop: 'Drop',
     gameoverTitle: 'Game over',
     gameoverScore: 'Your score',
     gameoverBest: 'Best',
@@ -86,15 +91,35 @@ export const en: AppResources = {
     nicknamePromptTitle: 'Choose a nickname',
     nicknamePromptHint: 'Shown on the leaderboard. You can change it in Settings.',
     syncedToast: '{{count}} score(s) synced',
+    trophyUnlocked: '🏆 Trophy: {{name}}',
     backendOfflineNote: 'Online leaderboard not configured — using local data.',
   },
   catalog: {
-    games: {
-      'block-drop': {
-        title: 'Block Drop',
-        description:
-          'Stack glowing falling blocks, clear lines, and hold Overdrive to multiply your points.',
-      },
+    gameTitles: {
+      'block-drop': 'Block Drop',
+      'star-defender': 'Star Defender',
+      'road-burner': 'Road Burner',
+      'river-run': 'River Run',
+      'snake-coil': 'Snake Coil',
+      'brick-bounce': 'Brick Bounce',
+      'maze-muncher': 'Maze Muncher',
+      'frog-crossing': 'Frog Crossing',
+      'cannon-duel': 'Cannon Duel',
+      'bug-blaster': 'Bug Blaster',
+      'asteroid-drift': 'Asteroid Drift',
+      'paddle-clash': 'Paddle Clash',
+      'match-cascade': 'Match Cascade',
+      'pipe-flow': 'Pipe Flow',
+      'light-flip': 'Light Flip',
+      'sliding-tiles': 'Sliding Tiles',
+      'sky-hopper': 'Sky Hopper',
+      'cave-flyer': 'Cave Flyer',
+      'tower-stack': 'Tower Stack',
+      'dodge-storm': 'Dodge Storm',
+    },
+    gameDescriptions: {
+      'block-drop':
+        'Stack glowing falling blocks, clear lines, and hold Overdrive to multiply your points.',
     },
     packs: {
       'pack-base': {

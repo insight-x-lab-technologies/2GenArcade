@@ -22,6 +22,8 @@ export interface GameMeta {
   trophies: TrophyDef[];
   /** Preview art. May be an emoji/glyph for procedurally-drawn thumbnails. */
   thumbnail: string;
+  /** Optional i18n key for a "how to play" blurb shown on the detail screen. */
+  howToPlayKey?: string;
 }
 
 /** Namespaced key/value storage. Hydrated by the shell before `init`, written

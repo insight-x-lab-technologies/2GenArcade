@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1030"/>
+      <stop offset="1" stop-color="#0d0820"/>
+    </linearGradient>
+  </defs>
+  <!-- full-bleed background for maskable safe zone -->
+  <rect width="512" height="512" fill="url(#bgm)"/>
+  <g transform="translate(48,48) scale(0.8125)">
+    <rect x="150" y="150" width="76" height="76" rx="10" fill="#b06cff"/>
+    <rect x="226" y="150" width="76" height="76" rx="10" fill="#ffb347"/>
+    <rect x="226" y="226" width="76" height="76" rx="10" fill="#ff5d73"/>
+    <rect x="150" y="302" width="76" height="76" rx="10" fill="#46d4c4"/>
+    <rect x="226" y="302" width="76" height="76" rx="10" fill="#ffd27a"/>
+    <rect x="302" y="302" width="76" height="76" rx="10" fill="#ff8c42"/>
+  </g>
+</svg>

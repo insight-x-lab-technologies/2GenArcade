@@ -6,3 +6,11 @@ __pycache__/
 dist/
 build/
 .DS_Store
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Local dev server runtime artifacts (webapplab http-server) + smoke output
+scripts/.webapplab-http-server.*
+scripts/webapplab-http-server.log
+scripts/smoke-gameplay.png

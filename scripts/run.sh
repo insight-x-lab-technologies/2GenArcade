@@ -5,7 +5,8 @@ SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 APP_NAME="$(basename "${PROJECT_DIR}")"
 PORT="${PORT:-${WEBAPPLAB_PORT:-8080}}"
-SERVE_DIR="${SERVE_DIR:-${PROJECT_DIR}/src}"
+SERVE_DIR="${SERVE_DIR:-${PROJECT_DIR}/dist}"
+SKIP_BUILD="${SKIP_BUILD:-0}"
 PID_FILE="${SCRIPT_DIR}/.webapplab-http-server.pid"
 URL_FILE="${SCRIPT_DIR}/.webapplab-http-server.urls"
 LOG_FILE="${SCRIPT_DIR}/webapplab-http-server.log"
@@ -72,8 +73,20 @@ print_runtime_summary() {
   cat "${URL_FILE}"
 }
 
+# Build the Vite app (PWA) before serving, unless SKIP_BUILD=1.
+if [[ "${SKIP_BUILD}" != "1" ]]; then
+  cd "${PROJECT_DIR}"
+  if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
+    echo "Instalando dependências (npm install)…"
+    npm install
+  fi
+  echo "Compilando o app (npm run build)…"
+  npm run build
+fi
+
 if [[ ! -d "${SERVE_DIR}" ]]; then
   echo "Erro: diretório a ser servido não encontrado: ${SERVE_DIR}"
+  echo "Rode 'npm run build' ou remova SKIP_BUILD=1."
   exit 1
 fi
 

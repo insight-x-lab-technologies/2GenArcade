@@ -52,6 +52,7 @@ export class AudioEngine {
 
   private parts: Tone.Part[] = [];
   private voices: ChannelVoice[] = [];
+  private currentId: string | null = null;
 
   constructor() {
     this.musicBus = new Tone.Volume(Tone.gainToDb(this.musicVolume)).toDestination();
@@ -89,9 +90,13 @@ export class AudioEngine {
     this.sfxBus.volume.rampTo(this.muted ? -Infinity : Tone.gainToDb(this.sfxVolume), 0.06);
   }
 
-  playTrack(track: ChiptuneTrack): void {
+  /** Play a looping track. Pass a stable `id` to avoid restarting the same
+   *  track when called again (e.g. on re-navigation). */
+  playTrack(track: ChiptuneTrack, id?: string): void {
     if (!this.started) return;
+    if (id && id === this.currentId && this.parts.length > 0) return;
     this.stopMusic();
+    this.currentId = id ?? null;
 
     Tone.getTransport().bpm.value = track.bpm;
     for (const channel of track.channels) {
@@ -123,6 +128,7 @@ export class AudioEngine {
     for (const voice of this.voices) voice.dispose();
     this.parts = [];
     this.voices = [];
+    this.currentId = null;
   }
 
   playSfx(def: SfxDef): void {

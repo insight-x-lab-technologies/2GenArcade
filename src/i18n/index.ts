@@ -22,8 +22,11 @@ export function initI18n(): typeof i18n {
     .init({
       resources,
       fallbackLng: 'pt-BR',
-      supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-      nonExplicitSupportedLngs: true,
+      // Region codes resolve via i18next's hierarchy (en-US -> en); 'dev' keeps
+      // i18next's internal default language supported.
+      // NOTE: do NOT enable nonExplicitSupportedLngs — combined with the
+      // detector it produced an empty `languages` array and rendered raw keys.
+      supportedLngs: ['pt-BR', 'en', 'dev'],
       ns: NAMESPACES as unknown as string[],
       defaultNS: 'shell',
       interpolation: { escapeValue: false },
@@ -32,6 +35,7 @@ export function initI18n(): typeof i18n {
         lookupLocalStorage: '2genarcade.lang',
         caches: ['localStorage'],
       },
+      react: { useSuspense: false },
       returnNull: false,
     });
   return i18n;

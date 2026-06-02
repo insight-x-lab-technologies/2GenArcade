@@ -11,7 +11,7 @@ export class GameAudioBus implements AudioBus {
 
   playMusic(track: MusicTrackName): void {
     const def = this.kit[track];
-    if (def) this.engine.playTrack(def);
+    if (def) this.engine.playTrack(def, `game:${track}`);
   }
 
   stopMusic(): void {
