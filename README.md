@@ -166,8 +166,10 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
   neon canyon, blast drones, manage fuel, and *Boost* for distance.
 - 🏎️ **Road Burner** — original lane-based racing/dodge; weave a curving neon
   highway, graze traffic to charge *Burn*, and auto-ignite *Nitro* for 2× points.
+- 👾 **Star Defender** — original fixed shooter; hold off descending waves of
+  wraiths, charge the *Nova* screen-sweep beam, and survive on three lives.
 
-**Planned** (contract ready, not yet implemented): Star Defender,
+**Planned** (contract ready, not yet implemented):
 Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
 Asteroid Drift, Paddle Clash, Match Cascade, Pipe Flow, Light Flip,
 Sliding Tiles, Sky Hopper, Cave Flyer, Tower Stack, Dodge Storm.

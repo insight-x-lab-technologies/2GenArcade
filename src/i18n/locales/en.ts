@@ -127,6 +127,8 @@ export const en: AppResources = {
         'Fly the skimmer up a narrowing neon canyon, blast drones, grab fuel, and boost to rack up distance.',
       'road-burner':
         'Weave through traffic on a neon highway, graze cars to charge Burn, and unleash Nitro to double your points.',
+      'star-defender':
+        'Defend the station from descending waves of wraiths, charge up, and unleash the Nova to sweep the screen at double points.',
     },
     packs: {
       'pack-base': {
@@ -203,6 +205,21 @@ export const en: AppResources = {
       burnout: { name: 'Burnout', description: 'Trigger Nitro once.' },
       roadster: { name: 'Open road', description: 'Travel 2,000 m.' },
       highScore: { name: 'Asphalt legend', description: 'Score 8,000 points.' },
+    },
+  },
+  starDefender: {
+    hudCharge: 'Charge',
+    hudReady: 'Nova ready',
+    hudNova: 'Nova',
+    waveBanner: 'Wave {{wave}}',
+    howToPlay:
+      'Use the d-pad (or arrow keys) to move the ship: left/right steer. Fire is automatic. Destroy the wraiths before they reach the bottom and dodge their shots. Each kill charges the Nova; when it is full, hold up to unleash it — a few seconds of triple fire, double points and a clean sweep of enemy fire. You have 3 lives.',
+    trophies: {
+      firstBlood: { name: 'First blood', description: 'Destroy your first wraith.' },
+      vanguard: { name: 'Vanguard', description: 'Reach wave 3.' },
+      nova: { name: 'Supernova', description: 'Unleash the Nova once.' },
+      sharpshooter: { name: 'Sharpshooter', description: 'Destroy 100 wraiths in one run.' },
+      highScore: { name: 'Star legend', description: 'Score 10,000 points.' },
     },
   },
 };

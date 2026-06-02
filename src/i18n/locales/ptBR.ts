@@ -125,6 +125,8 @@ export const ptBR = {
         'Pilote o planador por um cânion de neon que se estreita, destrua drones, abasteça e acelere para somar distância.',
       'road-burner':
         'Costure o trânsito numa rodovia de neon, roce nos carros para encher o Combustão e dispare o Nitro para dobrar os pontos.',
+      'star-defender':
+        'Defenda a estação de ondas de wraiths que descem, encha a Carga e dispare a Nova para varrer a tela com pontos em dobro.',
     },
     packs: {
       'pack-base': {
@@ -201,6 +203,21 @@ export const ptBR = {
       burnout: { name: 'Cantada de pneu', description: 'Dispare o Nitro uma vez.' },
       roadster: { name: 'Asfalto afora', description: 'Percorra 2.000 m.' },
       highScore: { name: 'Lenda do asfalto', description: 'Faça 8.000 pontos.' },
+    },
+  },
+  starDefender: {
+    hudCharge: 'Carga',
+    hudReady: 'Nova pronta',
+    hudNova: 'Nova',
+    waveBanner: 'Onda {{wave}}',
+    howToPlay:
+      'Use o direcional (ou as setas) para mover a nave: esquerda/direita pilotam. O tiro é automático. Destrua os wraiths antes que cheguem embaixo e desvie dos tiros deles. Cada abate enche a Carga; quando estiver cheia, segure cima para disparar a Nova — alguns segundos de tiro triplo, pontos em dobro e a tela limpa de tiros inimigos. Você tem 3 vidas.',
+    trophies: {
+      firstBlood: { name: 'Primeiro abate', description: 'Destrua seu primeiro wraith.' },
+      vanguard: { name: 'Vanguarda', description: 'Chegue à onda 3.' },
+      nova: { name: 'Supernova', description: 'Dispare a Nova uma vez.' },
+      sharpshooter: { name: 'Atirador de elite', description: 'Destrua 100 wraiths em uma partida.' },
+      highScore: { name: 'Lenda das estrelas', description: 'Faça 10.000 pontos.' },
     },
   },
 };
