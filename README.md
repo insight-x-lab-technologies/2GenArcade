@@ -164,8 +164,10 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
   and fill *Surge* to phase through yourself at 2× points.
 - 🛩️ **River Run** — original vertical scrolling shooter; weave a narrowing
   neon canyon, blast drones, manage fuel, and *Boost* for distance.
+- 🏎️ **Road Burner** — original lane-based racing/dodge; weave a curving neon
+  highway, graze traffic to charge *Burn*, and auto-ignite *Nitro* for 2× points.
 
-**Planned** (contract ready, not yet implemented): Star Defender, Road Burner,
+**Planned** (contract ready, not yet implemented): Star Defender,
 Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
 Asteroid Drift, Paddle Clash, Match Cascade, Pipe Flow, Light Flip,
 Sliding Tiles, Sky Hopper, Cave Flyer, Tower Stack, Dodge Storm.

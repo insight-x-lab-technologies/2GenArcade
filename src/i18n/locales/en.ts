@@ -125,6 +125,8 @@ export const en: AppResources = {
         'Guide the energy Coil around the grid, collect orbs, and fill Surge to phase through yourself and double your points.',
       'river-run':
         'Fly the skimmer up a narrowing neon canyon, blast drones, grab fuel, and boost to rack up distance.',
+      'road-burner':
+        'Weave through traffic on a neon highway, graze cars to charge Burn, and unleash Nitro to double your points.',
     },
     packs: {
       'pack-base': {
@@ -187,6 +189,20 @@ export const en: AppResources = {
       afterburner: { name: 'Afterburner', description: 'Trigger boost once.' },
       voyager: { name: 'Voyager', description: 'Travel 2,000 m.' },
       highScore: { name: 'Canyon legend', description: 'Score 8,000 points.' },
+    },
+  },
+  roadBurner: {
+    hudBurn: 'Burn',
+    hudNitro: 'Nitro',
+    hudDistance: 'Distance',
+    howToPlay:
+      'Use the d-pad (or arrow keys) to weave through traffic: left/right steer, hold up to accelerate and down to brake. Graze cars to charge Burn. When it fills, Nitro ignites automatically: a few seconds of extra speed, double points and phase-through. Crashing into traffic ends the run.',
+    trophies: {
+      firstPass: { name: 'First pass', description: 'Graze past a car.' },
+      overtaker: { name: 'Lane weaver', description: 'Make 50 passes in one run.' },
+      burnout: { name: 'Burnout', description: 'Trigger Nitro once.' },
+      roadster: { name: 'Open road', description: 'Travel 2,000 m.' },
+      highScore: { name: 'Asphalt legend', description: 'Score 8,000 points.' },
     },
   },
 };

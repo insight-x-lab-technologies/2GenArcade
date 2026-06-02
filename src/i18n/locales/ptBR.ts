@@ -123,6 +123,8 @@ export const ptBR = {
         'Guie a Espiral de energia pela grade, colete orbes e encha a Descarga para atravessar a si mesmo e dobrar os pontos.',
       'river-run':
         'Pilote o planador por um cânion de neon que se estreita, destrua drones, abasteça e acelere para somar distância.',
+      'road-burner':
+        'Costure o trânsito numa rodovia de neon, roce nos carros para encher o Combustão e dispare o Nitro para dobrar os pontos.',
     },
     packs: {
       'pack-base': {
@@ -185,6 +187,20 @@ export const ptBR = {
       afterburner: { name: 'Pós-combustão', description: 'Ative o turbo uma vez.' },
       voyager: { name: 'Viajante', description: 'Percorra 2.000 m.' },
       highScore: { name: 'Lenda do cânion', description: 'Faça 8.000 pontos.' },
+    },
+  },
+  roadBurner: {
+    hudBurn: 'Combustão',
+    hudNitro: 'Nitro',
+    hudDistance: 'Distância',
+    howToPlay:
+      'Use o direcional (ou as setas) para costurar o trânsito: esquerda/direita pilotam, segure cima para acelerar e baixo para frear. Passe raspando nos carros para encher o Combustão. Quando ele enche, o Nitro dispara sozinho: alguns segundos de velocidade extra, pontos em dobro e travessia pelos carros. Bater no trânsito encerra a corrida.',
+    trophies: {
+      firstPass: { name: 'Primeira ultrapassagem', description: 'Passe raspando em um carro.' },
+      overtaker: { name: 'Costureiro', description: 'Faça 50 ultrapassagens em uma corrida.' },
+      burnout: { name: 'Cantada de pneu', description: 'Dispare o Nitro uma vez.' },
+      roadster: { name: 'Asfalto afora', description: 'Percorra 2.000 m.' },
+      highScore: { name: 'Lenda do asfalto', description: 'Faça 8.000 pontos.' },
     },
   },
 };

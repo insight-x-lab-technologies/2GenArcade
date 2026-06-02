@@ -22,7 +22,6 @@ const titleKey = (id: string): string => `catalog:gameTitles.${id}`;
 // looks complete. Only Block Drop ships a real module in this phase.
 const PLANNED: Array<{ id: string; thumbnail: string; accent: AccentColor }> = [
   { id: 'star-defender', thumbnail: '👾', accent: 'violet' },
-  { id: 'road-burner', thumbnail: '🏎️', accent: 'coral' },
   { id: 'brick-bounce', thumbnail: '🧱', accent: 'coral' },
   { id: 'maze-muncher', thumbnail: '😋', accent: 'amber' },
   { id: 'frog-crossing', thumbnail: '🐸', accent: 'violet' },
@@ -67,6 +66,15 @@ export const CATALOG: CatalogGame[] = [
     accent: 'amber',
     status: 'available',
     load: () => import('@/games/river-run').then((m) => m.riverRunFactory),
+  },
+  {
+    id: 'road-burner',
+    packId: 'pack-base',
+    titleKey: titleKey('road-burner'),
+    thumbnail: '🏎️',
+    accent: 'coral',
+    status: 'available',
+    load: () => import('@/games/road-burner').then((m) => m.roadBurnerFactory),
   },
   ...PLANNED.map<CatalogGame>((g) => ({
     id: g.id,
