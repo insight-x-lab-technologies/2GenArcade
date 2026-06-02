@@ -14,6 +14,18 @@ is_running() {
   [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null
 }
 
+# Signal the whole process group first (the dev server spawns helper children,
+# e.g. esbuild), then fall back to the single PID if it isn't a group leader.
+term_pid() {
+  local pid="$1"
+  kill -TERM -- "-${pid}" 2>/dev/null || kill -TERM "${pid}" 2>/dev/null || true
+}
+
+force_pid() {
+  local pid="$1"
+  kill -KILL -- "-${pid}" 2>/dev/null || kill -KILL "${pid}" 2>/dev/null || true
+}
+
 if [[ ! -f "${PID_FILE}" ]]; then
   echo "Aplicação ${APP_NAME} não está em execução (PID file ausente)."
   exit 0
@@ -33,7 +45,7 @@ if ! is_running "${pid}"; then
 fi
 
 echo "Encerrando ${APP_NAME} (PID ${pid})..."
-kill "${pid}" 2>/dev/null || true
+term_pid "${pid}"
 
 for _ in $(seq 1 "${GRACE_SECONDS}"); do
   if ! is_running "${pid}"; then
@@ -46,7 +58,7 @@ for _ in $(seq 1 "${GRACE_SECONDS}"); do
 done
 
 echo "Processo ainda ativo após ${GRACE_SECONDS}s. Forçando encerramento..."
-kill -9 "${pid}" 2>/dev/null || true
+force_pid "${pid}"
 sleep 1
 
 if is_running "${pid}"; then

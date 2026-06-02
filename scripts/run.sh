@@ -5,12 +5,13 @@ SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 APP_NAME="$(basename "${PROJECT_DIR}")"
 PORT="${PORT:-${WEBAPPLAB_PORT:-8080}}"
-SERVE_DIR="${SERVE_DIR:-${PROJECT_DIR}/dist}"
-SKIP_BUILD="${SKIP_BUILD:-0}"
+HOST="${HOST:-0.0.0.0}"
 PID_FILE="${SCRIPT_DIR}/.webapplab-http-server.pid"
 URL_FILE="${SCRIPT_DIR}/.webapplab-http-server.urls"
 LOG_FILE="${SCRIPT_DIR}/webapplab-http-server.log"
-PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
+# Development mode: run the Vite dev server directly (a single Node process), so
+# the PID we record is the server itself and stop.sh can terminate it cleanly.
+VITE_BIN="${VITE_BIN:-${PROJECT_DIR}/node_modules/.bin/vite}"
 
 is_running() {
   local pid="$1"
@@ -18,11 +19,13 @@ is_running() {
 }
 
 start_server() {
+  local -a cmd=("${VITE_BIN}" --host "${HOST}" --port "${PORT}" --strictPort)
+
   if command -v setsid >/dev/null 2>&1; then
-    nohup setsid "${PYTHON_BIN}" -m http.server "${PORT}" --directory "${SERVE_DIR}" --bind 0.0.0.0 \
+    nohup setsid "${cmd[@]}" \
       < /dev/null >> "${LOG_FILE}" 2>&1 &
   else
-    nohup "${PYTHON_BIN}" -m http.server "${PORT}" --directory "${SERVE_DIR}" --bind 0.0.0.0 \
+    nohup "${cmd[@]}" \
       < /dev/null >> "${LOG_FILE}" 2>&1 &
   fi
 
@@ -67,26 +70,25 @@ print_runtime_summary() {
   echo "Aplicação: ${APP_NAME}"
   echo "PID: ${pid}"
   echo "Porta: ${PORT}"
-  echo "Diretório servido: ${SERVE_DIR}"
+  echo "Modo: desenvolvimento (Vite dev server)"
   echo "Log: ${LOG_FILE}"
   echo "URLs:"
   cat "${URL_FILE}"
 }
 
-# Build the Vite app (PWA) before serving, unless SKIP_BUILD=1.
-if [[ "${SKIP_BUILD}" != "1" ]]; then
+# Development mode: no production build. We only ensure dependencies exist so the
+# Vite dev server can start. Set SKIP_INSTALL=1 to skip the node_modules check.
+if [[ "${SKIP_INSTALL:-0}" != "1" ]]; then
   cd "${PROJECT_DIR}"
   if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
     echo "Instalando dependências (npm install)…"
     npm install
   fi
-  echo "Compilando o app (npm run build)…"
-  npm run build
 fi
 
-if [[ ! -d "${SERVE_DIR}" ]]; then
-  echo "Erro: diretório a ser servido não encontrado: ${SERVE_DIR}"
-  echo "Rode 'npm run build' ou remova SKIP_BUILD=1."
+if [[ ! -x "${VITE_BIN}" ]]; then
+  echo "Erro: Vite não encontrado em: ${VITE_BIN}"
+  echo "Rode 'npm install' ou defina VITE_BIN."
   exit 1
 fi
 
@@ -108,15 +110,16 @@ collect_urls "${PORT}" > "${URL_FILE}"
 
 {
   echo
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Iniciando ${APP_NAME} na porta ${PORT}"
-  echo "Diretório servido: ${SERVE_DIR}"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Iniciando ${APP_NAME} (dev) na porta ${PORT}"
+  echo "Modo: desenvolvimento (Vite dev server) — host ${HOST}"
 } >> "${LOG_FILE}"
 
 cd "${PROJECT_DIR}"
 server_pid="$(start_server)"
 echo "${server_pid}" > "${PID_FILE}"
 
-sleep 1
+# Give Vite a moment to boot (and to fail fast on a busy port via --strictPort).
+sleep 2
 if ! is_running "${server_pid}"; then
   echo "Erro: falha ao iniciar a aplicação."
   echo "Consulte o log: ${LOG_FILE}"
