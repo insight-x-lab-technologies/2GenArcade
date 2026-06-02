@@ -99,6 +99,16 @@ const sfx: Record<string, SfxDef> = {
       { note: 'C2', dur: '8n', time: 0.1 },
     ],
   },
+  powerup: {
+    wave: 'square',
+    volumeDb: -13,
+    notes: [
+      { note: 'C5', dur: '16n', time: 0 },
+      { note: 'E5', dur: '16n', time: 0.05 },
+      { note: 'G5', dur: '16n', time: 0.1 },
+      { note: 'C6', dur: '8n', time: 0.15 },
+    ],
+  },
   gameover: {
     wave: 'sawtooth',
     volumeDb: -9,

@@ -3,7 +3,10 @@ import {
   aabbHit,
   AMP_MAX,
   CAR_HW,
+  DAY_LEG,
   FIELD_W,
+  gripApproach,
+  isBigVehicle,
   isNearMiss,
   laneCenter,
   MAX_SPEED,
@@ -11,11 +14,22 @@ import {
   NEARMISS_GAP,
   NUM_LANES,
   onRoad,
+  pickPowerKind,
+  pickVehicleKind,
+  POWER_KINDS,
+  POWERS,
   ROAD_HALF,
   roadAt,
   scoreFromDistance,
+  SEGMENT_LEN,
   speedFor,
+  terrainAt,
+  terrainForSegment,
+  TERRAINS,
+  timeOfDayAt,
   trafficSpawnInterval,
+  VEHICLE_KINDS,
+  VEHICLES,
   worldYAt,
 } from './logic';
 
@@ -85,7 +99,7 @@ describe('speedFor', () => {
 describe('trafficSpawnInterval', () => {
   it('spawns denser traffic the further you go, with a floor', () => {
     expect(trafficSpawnInterval(0)).toBeGreaterThan(trafficSpawnInterval(5000));
-    expect(trafficSpawnInterval(1e9)).toBe(0.55);
+    expect(trafficSpawnInterval(1e9)).toBe(0.5);
   });
 });
 
@@ -110,5 +124,89 @@ describe('scoreFromDistance', () => {
   it('combines floored distance with bonuses', () => {
     expect(scoreFromDistance(1234.7, 0)).toBe(1234);
     expect(scoreFromDistance(1000, 360)).toBe(1360);
+  });
+});
+
+describe('gripApproach', () => {
+  it('moves toward the target without overshooting', () => {
+    const v = gripApproach(0, 100, 1, 1 / 60);
+    expect(v).toBeGreaterThan(0);
+    expect(v).toBeLessThan(100);
+  });
+
+  it('higher grip converges faster (slidey when low)', () => {
+    const high = gripApproach(0, 100, 1.0, 1 / 60);
+    const low = gripApproach(0, 100, 0.4, 1 / 60);
+    expect(high).toBeGreaterThan(low);
+  });
+});
+
+describe('terrains', () => {
+  it('opens on asphalt then cycles through deterministic terrains', () => {
+    expect(terrainForSegment(0)).toBe('asphalt');
+    expect(terrainAt(0).id).toBe('asphalt');
+    const seen = new Set<string>();
+    for (let i = 0; i < 8; i += 1) seen.add(terrainForSegment(i));
+    expect(seen).toEqual(new Set(['asphalt', 'rain', 'mud', 'snow']));
+  });
+
+  it('asphalt has the best speed and grip; snow the worst', () => {
+    expect(TERRAINS.asphalt.speedMul).toBeGreaterThan(TERRAINS.snow.speedMul);
+    expect(TERRAINS.asphalt.grip).toBeGreaterThan(TERRAINS.mud.grip);
+    expect(TERRAINS.mud.grip).toBeGreaterThan(TERRAINS.snow.grip);
+  });
+
+  it('terrainAt reports progress within the current segment', () => {
+    const a = terrainAt(SEGMENT_LEN * 1.5);
+    expect(a.index).toBe(1);
+    expect(a.t).toBeCloseTo(0.5);
+  });
+});
+
+describe('timeOfDayAt', () => {
+  it('starts in daylight and reaches night mid-cycle', () => {
+    expect(timeOfDayAt(0).phase).toBe('day');
+    expect(timeOfDayAt(0).darkness).toBeCloseTo(0);
+    const night = timeOfDayAt(DAY_LEG); // peak darkness
+    expect(night.phase).toBe('night');
+    expect(night.darkness).toBeCloseTo(1);
+  });
+
+  it('keeps darkness within [0,1] across a long drive', () => {
+    for (let d = 0; d < 30000; d += 137) {
+      const k = timeOfDayAt(d).darkness;
+      expect(k).toBeGreaterThanOrEqual(0);
+      expect(k).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('vehicles', () => {
+  it('bigger vehicles are larger and slower', () => {
+    expect(VEHICLES.rig.hh).toBeGreaterThan(VEHICLES.car.hh);
+    expect(VEHICLES.car.hh).toBeGreaterThan(VEHICLES.bike.hh);
+    expect(VEHICLES.rig.maxSpeed).toBeLessThan(VEHICLES.bike.maxSpeed);
+    expect(isBigVehicle('rig')).toBe(true);
+    expect(isBigVehicle('bike')).toBe(false);
+  });
+
+  it('pickVehicleKind always returns a valid kind across the range', () => {
+    for (let r = 0; r < 1; r += 0.013) {
+      expect(VEHICLE_KINDS).toContain(pickVehicleKind(r));
+    }
+  });
+});
+
+describe('power-ups', () => {
+  it('defines all 8 kinds with a unique trophy each', () => {
+    expect(POWER_KINDS).toHaveLength(8);
+    const trophies = new Set(POWER_KINDS.map((k) => POWERS[k].trophyId));
+    expect(trophies.size).toBe(8);
+  });
+
+  it('pickPowerKind always returns a valid kind across the range', () => {
+    for (let r = 0; r < 1; r += 0.017) {
+      expect(POWER_KINDS).toContain(pickPowerKind(r));
+    }
   });
 });

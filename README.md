@@ -165,7 +165,10 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
 - 🛩️ **River Run** — original vertical scrolling shooter; weave a narrowing
   neon canyon, blast drones, manage fuel, and *Boost* for distance.
 - 🏎️ **Road Burner** — original lane-based racing/dodge; weave a curving neon
-  highway, graze traffic to charge *Burn*, and auto-ignite *Nitro* for 2× points.
+  highway through bikes/cars/trucks/rigs, graze traffic to charge *Burn* and
+  auto-ignite *Nitro*. Shifting terrains (asphalt/rain/mud/snow) change speed and
+  grip, a day→afternoon→night cycle lights up brake lights, 8 temporary power-ups
+  add chaos, and 30 trophies reward it all.
 - 👾 **Star Defender** — original fixed shooter; hold off descending waves of
   wraiths, charge the *Nova* screen-sweep beam, and survive on three lives.
 

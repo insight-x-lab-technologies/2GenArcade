@@ -74,9 +74,38 @@ describe('RoadBurnerGame (integration)', () => {
     expect(over).toBeDefined();
     const payload = over!.payload as GameEventMap['gameover'];
     expect(typeof payload.score).toBe('number');
-    expect(payload.stats).toHaveProperty('distance');
-    expect(payload.stats).toHaveProperty('passes');
-    expect(payload.stats).toHaveProperty('nitros');
+    for (const key of [
+      'distance',
+      'passes',
+      'bigPasses',
+      'nitros',
+      'powerups',
+      'usedShield',
+      'mud',
+      'snow',
+      'rain',
+      'night',
+    ]) {
+      expect(payload.stats).toHaveProperty(key);
+    }
+    game.destroy();
+  });
+
+  it('runs a long random drive through terrains and power-ups without throwing', () => {
+    const { ctx, held } = makeContext();
+    const game = new RoadBurnerGame();
+    game.init(ctx);
+    // Drive far enough to cross terrain segments and the day→night cycle.
+    expect(() => {
+      for (let i = 0; i < 4000; i += 1) {
+        held.clear();
+        if (i % 120 < 60) held.add('right');
+        else held.add('left');
+        held.add('up');
+        game.update(1 / 60);
+        if (i % 7 === 0) game.render((i % 60) / 60);
+      }
+    }).not.toThrow();
     game.destroy();
   });
 });
