@@ -3,12 +3,18 @@ import { Toggle, VolumeSlider, cn } from '@/ui';
 import { SUPPORTED_LANGUAGES, type AppLanguage } from '@/i18n';
 import { APP_VERSION } from '../constants';
 import { ScreenShell } from '../ScreenShell';
-import { useArcadeStore } from '../store';
+import { useArcadeStore, type ControlStyle } from '../store';
 
 const LANG_LABEL: Record<AppLanguage, string> = {
   'pt-BR': 'Português',
   en: 'English',
 };
+
+const CONTROL_STYLES: Array<{ id: ControlStyle; glyph: string }> = [
+  { id: 'dpad', glyph: '✚' },
+  { id: 'zones', glyph: '◉' },
+  { id: 'swipe', glyph: '✦' },
+];
 
 export function SettingsScreen() {
   const { t } = useTranslation();
@@ -20,6 +26,7 @@ export function SettingsScreen() {
   const setSfxVolume = useArcadeStore((s) => s.setSfxVolume);
   const toggleCrt = useArcadeStore((s) => s.toggleCrt);
   const setLanguage = useArcadeStore((s) => s.setLanguage);
+  const setControlStyle = useArcadeStore((s) => s.setControlStyle);
   const setNickname = useArcadeStore((s) => s.setNickname);
 
   return (
@@ -55,6 +62,44 @@ export function SettingsScreen() {
             placeholder={t('settingsNicknamePlaceholder')}
             className="min-h-[48px] w-full rounded-arcade border border-white/10 bg-night-900 px-4 font-mono text-sm text-ink placeholder:text-muted/60 focus:border-amber focus:outline-none"
           />
+        </Section>
+
+        {/* Control style */}
+        <Section title={t('settingsControl')}>
+          <div className="flex flex-col gap-2">
+            {CONTROL_STYLES.map((style) => (
+              <button
+                key={style.id}
+                type="button"
+                onClick={() => setControlStyle(style.id)}
+                aria-pressed={settings.controlStyle === style.id}
+                className={cn(
+                  'flex min-h-[48px] items-center gap-3 rounded-arcade border px-3 text-left transition-colors',
+                  settings.controlStyle === style.id
+                    ? 'border-amber bg-amber/15 shadow-glow-amber'
+                    : 'border-white/10 hover:bg-white/5',
+                )}
+              >
+                <span aria-hidden className="text-xl text-violet">
+                  {style.glyph}
+                </span>
+                <span className="flex flex-col">
+                  <span
+                    className={cn(
+                      'font-mono text-sm',
+                      settings.controlStyle === style.id ? 'text-amber-glow' : 'text-ink',
+                    )}
+                  >
+                    {t(`settingsControl_${style.id}`)}
+                  </span>
+                  <span className="font-mono text-[10px] text-muted">
+                    {t(`settingsControl_${style.id}_hint`)}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 font-mono text-[10px] text-muted/70">{t('settingsControlNote')}</p>
         </Section>
 
         {/* Audio */}

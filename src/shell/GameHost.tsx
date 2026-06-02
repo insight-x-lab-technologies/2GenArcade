@@ -9,11 +9,11 @@ import type {
   Direction,
   ControlScheme,
 } from '@/types';
-import { CanvasManager, FixedTimestepLoop, PointerInputAdapter } from '@/engine';
+import { CanvasManager, diffHeld, FixedTimestepLoop, PointerInputAdapter } from '@/engine';
 import { GameAudioBus, getAudioEngine } from '@/audio';
 import { getLocalStore, getTrophyService } from '@/lib';
 import i18nInstance from '@/i18n';
-import { ArcadeButton, VirtualDpad } from '@/ui';
+import { ArcadeButton, SwipeOverlay, VirtualDpad, ZonePad } from '@/ui';
 import type { CatalogGame } from '@/data/catalog';
 import { useArcadeStore } from './store';
 
@@ -46,12 +46,14 @@ export function GameHost({ game, onExit }: GameHostProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const adapterRef = useRef<PointerInputAdapter | null>(null);
+  const heldTouchRef = useRef<Set<Direction>>(new Set());
 
   const [loading, setLoading] = useState(true);
   const [paused, setPaused] = useState(false);
   const [hudScore, setHudScore] = useState(0);
   const [controlScheme, setControlScheme] = useState<ControlScheme>('swipe');
 
+  const controlStyle = useArcadeStore((s) => s.settings.controlStyle);
   const reducedMotion = useArcadeStore((s) => s.reducedMotion);
   const handleGameOver = useArcadeStore((s) => s.handleGameOver);
   const navigate = useArcadeStore((s) => s.navigate);
@@ -184,10 +186,24 @@ export function GameHost({ game, onExit }: GameHostProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.id]);
 
+  const dispatchDir = (direction: Direction, phase: 'press' | 'release') =>
+    adapterRef.current?.dispatch({ kind: 'dpad', direction, phase });
+  const dispatchBtn = (id: string, phase: 'press' | 'release') =>
+    adapterRef.current?.dispatch({ kind: 'button', id, phase });
+
+  // Analog controls (zone pad / swipe stick) report the *whole* held-set; diff
+  // it against the previous one into press/release events on the shared adapter.
+  const setHeld = (dirs: Direction[]) => {
+    const next = new Set(dirs);
+    diffHeld(heldTouchRef.current, next, dispatchDir);
+    heldTouchRef.current = next;
+  };
+
   const doPause = () => {
     if (pausedRef.current) return;
     pausedRef.current = true;
     setPaused(true);
+    setHeld([]); // release any analog-held directions so nothing sticks
     loopRef.current?.stop();
     moduleRef.current?.pause();
   };
@@ -201,10 +217,11 @@ export function GameHost({ game, onExit }: GameHostProps) {
     loopRef.current?.start();
   };
 
-  const dispatchDir = (direction: Direction, phase: 'press' | 'release') =>
-    adapterRef.current?.dispatch({ kind: 'dpad', direction, phase });
-  const dispatchBtn = (id: string, phase: 'press' | 'release') =>
-    adapterRef.current?.dispatch({ kind: 'button', id, phase });
+  // The new analog styles only apply to the 4-direction games; Block Drop keeps
+  // its dedicated rotate/drop pad.
+  const directional = controlScheme === 'dpad';
+  const useZones = directional && controlStyle === 'zones';
+  const useSwipe = directional && controlStyle === 'swipe';
 
   return (
     <div className="relative flex h-full flex-col bg-night-900">
@@ -232,23 +249,33 @@ export function GameHost({ game, onExit }: GameHostProps) {
             {t('common:loading')}
           </div>
         )}
+        {/* Floating-joystick style draws directly on the play surface. */}
+        {useSwipe && !paused && !loading && (
+          <SwipeOverlay onChange={setHeld} label={t('controlSwipeArea')} />
+        )}
       </div>
 
       {/* On-screen controls */}
       <div className="pb-[max(0.75rem,var(--safe-bottom))] pt-2">
-        <VirtualDpad
-          layout={controlScheme === 'dpad' ? 'cross' : 'tetris'}
-          onDirection={dispatchDir}
-          onButton={dispatchBtn}
-          labels={{
-            left: t('controlLeft'),
-            right: t('controlRight'),
-            up: t('controlUp'),
-            down: t('controlDown'),
-            rotate: t('controlRotate'),
-            drop: t('controlDrop'),
-          }}
-        />
+        {useZones ? (
+          <ZonePad onChange={setHeld} label={t('controlZonePad')} />
+        ) : useSwipe ? (
+          <p className="text-center font-mono text-xs text-muted">{t('controlSwipeHint')}</p>
+        ) : (
+          <VirtualDpad
+            layout={controlScheme === 'dpad' ? 'cross' : 'tetris'}
+            onDirection={dispatchDir}
+            onButton={dispatchBtn}
+            labels={{
+              left: t('controlLeft'),
+              right: t('controlRight'),
+              up: t('controlUp'),
+              down: t('controlDown'),
+              rotate: t('controlRotate'),
+              drop: t('controlDrop'),
+            }}
+          />
+        )}
       </div>
 
       {/* Pause overlay */}

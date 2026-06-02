@@ -45,11 +45,17 @@ export interface RunResult {
   newTrophies: TrophyDef[];
 }
 
+/** On-screen control style for the 4-direction games (chosen in Settings).
+ *  'dpad' = the classic button cross; 'zones' = an analog quadrant pad;
+ *  'swipe' = a floating joystick on the play surface. */
+export type ControlStyle = 'dpad' | 'zones' | 'swipe';
+
 interface Settings {
   musicVolume: number;
   sfxVolume: number;
   crtEnabled: boolean;
   language: AppLanguage;
+  controlStyle: ControlStyle;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -57,6 +63,7 @@ const DEFAULT_SETTINGS: Settings = {
   sfxVolume: 0.8,
   crtEnabled: true,
   language: 'pt-BR',
+  controlStyle: 'dpad',
 };
 
 const SETTINGS_KEY = 'settings';
@@ -88,6 +95,7 @@ interface ArcadeState {
   setSfxVolume(v: number): void;
   toggleCrt(): void;
   setLanguage(lang: AppLanguage): void;
+  setControlStyle(style: ControlStyle): void;
   setNickname(name: string): void;
 
   isGameUnlocked(gameId: string): boolean;
@@ -192,6 +200,12 @@ export const useArcadeStore = create<ArcadeState>((set, get) => ({
   setLanguage(lang) {
     setAppLanguage(lang);
     const settings = { ...get().settings, language: lang };
+    set({ settings });
+    void getLocalStore().kvSet(SETTINGS_KEY, settings);
+  },
+
+  setControlStyle(style) {
+    const settings = { ...get().settings, controlStyle: style };
     set({ settings });
     void getLocalStore().kvSet(SETTINGS_KEY, settings);
   },

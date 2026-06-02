@@ -10,3 +10,4 @@ export {
 } from './gesture';
 export type { PointerSample, GestureOptions } from './gesture';
 export { clamp, lerp, easeOutCubic, randInt } from './math';
+export { vectorToDirections, diffHeld } from './analogControl';
