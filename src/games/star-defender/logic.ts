@@ -99,6 +99,60 @@ export const clampOffsetX = (
 export const invaded = (maxEnemyY: number, dangerY = DANGER_Y): boolean =>
   maxEnemyY >= dangerY;
 
+// --- Power-ups (drop from destroyed wraiths / bosses) --------------------------
+
+export type PowerKind = 'shield' | 'rapid' | 'twin' | 'spread' | 'slow' | 'life';
+
+export interface PowerSpec {
+  kind: PowerKind;
+  /** Seconds the buff lasts; 0 = instant (life). */
+  duration: number;
+  color: string;
+  letter: string;
+}
+
+export const POWERS: Record<PowerKind, PowerSpec> = {
+  shield: { kind: 'shield', duration: 6, color: '#7ea6ff', letter: 'I' },
+  rapid: { kind: 'rapid', duration: 7, color: '#ffd27a', letter: 'R' },
+  twin: { kind: 'twin', duration: 8, color: '#46d4c4', letter: '2' },
+  spread: { kind: 'spread', duration: 8, color: '#9be15d', letter: 'W' },
+  slow: { kind: 'slow', duration: 5, color: '#5ec8d8', letter: 'L' },
+  life: { kind: 'life', duration: 0, color: '#ff5d73', letter: '+' },
+};
+
+export const POWER_KINDS: PowerKind[] = ['shield', 'rapid', 'twin', 'spread', 'slow', 'life'];
+
+/** Uniform pick of a power-up from a [0,1) random. Pure for testability. */
+export const pickPowerKind = (rand: number): PowerKind =>
+  POWER_KINDS[
+    Math.min(POWER_KINDS.length - 1, Math.floor(clamp(rand, 0, 0.999999) * POWER_KINDS.length))
+  ]!;
+
+export const POWERUP_HW = 3;
+export const POWERUP_HH = 3;
+export const POWERUP_FALL = 42; // units/s the pickup drifts down
+export const DROP_CHANCE = 0.1; // chance a destroyed wraith drops a pickup
+export const RAPID_FIRE_INTERVAL = 0.13; // fire cadence while Rapid is active
+export const SLOW_FACTOR = 0.5; // enemy speed/fire multiplier while Slow is active
+export const MAX_LIVES = 5;
+
+// --- Bosses (a guardian appears every Nth wave) --------------------------------
+
+export const BOSS_EVERY = 4; // a boss wave every N waves
+export const BOSS_Y = 30;
+export const BOSS_HW = 12;
+export const BOSS_HH = 7;
+export const BOSS_SPEED = 24; // units/s sideways
+export const BOSS_BULLET_SPEED = 60;
+
+/** Which boss number (1-based) a wave is, or 0 if it is a normal wave. */
+export const bossIndex = (wave: number): number => (wave % BOSS_EVERY === 0 ? wave / BOSS_EVERY : 0);
+export const isBossWave = (wave: number): boolean => bossIndex(wave) > 0;
+export const bossHp = (wave: number): number => 36 + Math.max(0, bossIndex(wave) - 1) * 28;
+export const bossPoints = (wave: number): number => 500 + Math.max(0, bossIndex(wave) - 1) * 250;
+export const bossFireInterval = (wave: number): number =>
+  Math.max(0.65, 1.5 - Math.max(0, bossIndex(wave) - 1) * 0.16);
+
 /** Axis-aligned box overlap (used for all projectile/ship hits). */
 export const aabbHit = (
   ax: number,

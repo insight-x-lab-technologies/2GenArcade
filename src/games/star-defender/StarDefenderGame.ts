@@ -3,11 +3,20 @@ import { clamp } from '@/engine';
 import { starDefenderMeta } from './meta';
 import {
   aabbHit,
+  BOSS_BULLET_SPEED,
+  BOSS_HH,
+  BOSS_HW,
+  BOSS_SPEED,
+  BOSS_Y,
+  bossFireInterval,
+  bossHp,
+  bossPoints,
   BULLET_SPEED,
   CHARGE_MAX,
   CHARGE_PER_KILL,
   clampOffsetX,
   COLS,
+  DROP_CHANCE,
   DROP_STEP,
   EN_HH,
   EN_HW,
@@ -20,16 +29,27 @@ import {
   homeX,
   homeY,
   invaded,
+  isBossWave,
+  MAX_LIVES,
   NOVA_DURATION,
   NOVA_FIRE_INTERVAL,
   PLAYER_HH,
   PLAYER_HW,
   PLAYER_SPEED,
   PLAYER_Y,
+  type PowerKind,
+  pickPowerKind,
+  POWER_KINDS,
+  POWERS,
+  POWERUP_FALL,
+  POWERUP_HH,
+  POWERUP_HW,
+  RAPID_FIRE_INTERVAL,
   RESPAWN_INVULN,
   reverseIfEdge,
   rowPoints,
   rowsForWave,
+  SLOW_FACTOR,
   START_LIVES,
 } from './logic';
 
@@ -48,13 +68,32 @@ interface Bullet {
 interface EnemyBullet {
   x: number;
   y: number;
+  prevX: number;
   prevY: number;
+  vx: number;
+  speed: number;
 }
 interface Wraith {
   col: number;
   row: number;
   points: number;
   color: string;
+}
+interface PowerUp {
+  kind: PowerKind;
+  x: number;
+  y: number;
+  prevY: number;
+}
+interface Boss {
+  x: number;
+  prevX: number;
+  y: number;
+  hp: number;
+  maxHp: number;
+  dir: number;
+  fireTimer: number;
+  hitFlash: number;
 }
 interface Particle {
   x: number;
@@ -98,11 +137,14 @@ export class StarDefenderGame implements GameModule {
 
   private bullets: Bullet[] = [];
   private enemyBullets: EnemyBullet[] = [];
+  private powerups: PowerUp[] = [];
   private particles: Particle[] = [];
   private stars: Star[] = [];
+  private boss: Boss | null = null;
 
   private fireTimer = 0;
   private enemyFireTimer = 1;
+  private fx: Record<PowerKind, number> = this.zeroFx();
 
   private charge = 0;
   private nova = false;
@@ -112,6 +154,9 @@ export class StarDefenderGame implements GameModule {
   private score = 0;
   private kills = 0;
   private novas = 0;
+  private bossKills = 0;
+  private powerupsCollected = 0;
+  private livesGained = 0;
 
   private emitTimer = 0;
   private lastEmitted = -1;
@@ -120,6 +165,19 @@ export class StarDefenderGame implements GameModule {
   private gameOver = false;
   private firstBloodAwarded = false;
   private novaAwarded = false;
+  private awarded = new Set<string>();
+
+  private zeroFx(): Record<PowerKind, number> {
+    return { shield: 0, rapid: 0, twin: 0, spread: 0, slow: 0, life: 0 };
+  }
+  private active(k: PowerKind): boolean {
+    return this.fx[k] > 0;
+  }
+  private award(id: string): void {
+    if (this.awarded.has(id)) return;
+    this.awarded.add(id);
+    this.ctx.emit.emit('trophy', { trophyId: id });
+  }
 
   init(ctx: GameContext): void {
     this.ctx = ctx;
@@ -140,9 +198,12 @@ export class StarDefenderGame implements GameModule {
     this.breakTimer = 0;
     this.bullets = [];
     this.enemyBullets = [];
+    this.powerups = [];
     this.particles = [];
+    this.boss = null;
     this.fireTimer = 0;
     this.enemyFireTimer = 1;
+    this.fx = this.zeroFx();
     this.charge = 0;
     this.nova = false;
     this.novaTime = 0;
@@ -150,6 +211,9 @@ export class StarDefenderGame implements GameModule {
     this.score = 0;
     this.kills = 0;
     this.novas = 0;
+    this.bossKills = 0;
+    this.powerupsCollected = 0;
+    this.livesGained = 0;
     this.emitTimer = 0;
     this.lastEmitted = -1;
     this.flash = 0;
@@ -157,6 +221,7 @@ export class StarDefenderGame implements GameModule {
     this.gameOver = false;
     this.firstBloodAwarded = false;
     this.novaAwarded = false;
+    this.awarded = new Set();
     this.stars = Array.from({ length: STAR_COUNT }, () => ({
       x: Math.random() * FIELD_W,
       y: Math.random() * FIELD_H,
@@ -167,8 +232,30 @@ export class StarDefenderGame implements GameModule {
   }
 
   private startWave(wave: number): void {
-    const rows = rowsForWave(wave);
     this.wraiths = [];
+    this.boss = null;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.prevOffsetX = 0;
+    this.prevOffsetY = 0;
+    this.dir = 1;
+
+    if (isBossWave(wave)) {
+      const hp = bossHp(wave);
+      this.boss = {
+        x: FIELD_W / 2,
+        prevX: FIELD_W / 2,
+        y: BOSS_Y,
+        hp,
+        maxHp: hp,
+        dir: 1,
+        fireTimer: bossFireInterval(wave),
+        hitFlash: 0,
+      };
+      return;
+    }
+
+    const rows = rowsForWave(wave);
     for (let row = 0; row < rows; row += 1) {
       for (let col = 0; col < COLS; col += 1) {
         this.wraiths.push({
@@ -179,11 +266,6 @@ export class StarDefenderGame implements GameModule {
         });
       }
     }
-    this.offsetX = 0;
-    this.offsetY = 0;
-    this.prevOffsetX = 0;
-    this.prevOffsetY = 0;
-    this.dir = 1;
     this.speed = formationSpeed(wave);
     this.enemyFireTimer = enemyFireInterval(wave);
   }
@@ -209,11 +291,18 @@ export class StarDefenderGame implements GameModule {
       b.prevX = b.x;
       b.prevY = b.y;
     }
-    for (const eb of this.enemyBullets) eb.prevY = eb.y;
+    for (const eb of this.enemyBullets) {
+      eb.prevX = eb.x;
+      eb.prevY = eb.y;
+    }
+    for (const p of this.powerups) p.prevY = p.y;
+    if (this.boss) this.boss.prevX = this.boss.x;
 
     if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
     if (this.flash > 0) this.flash = Math.max(0, this.flash - dt * 2.5);
     if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 3);
+    for (const k of POWER_KINDS) if (this.fx[k] > 0) this.fx[k] = Math.max(0, this.fx[k] - dt);
+    const slow = this.active('slow') ? SLOW_FACTOR : 1;
 
     // Steering (continuous via held inputs — no gesture lag).
     const sdir = (input.isHeld('right') ? 1 : 0) - (input.isHeld('left') ? 1 : 0);
@@ -236,7 +325,8 @@ export class StarDefenderGame implements GameModule {
     }
 
     this.fireWeapons(dt);
-    this.moveBullets(dt);
+    this.moveBullets(dt, slow);
+    this.movePowerups(dt);
 
     // Between waves: short breather, then the next (harder) wave.
     if (this.breakTimer > 0) {
@@ -245,15 +335,23 @@ export class StarDefenderGame implements GameModule {
         this.wave += 1;
         this.startWave(this.wave);
       }
+    } else if (this.boss) {
+      this.moveBoss(dt, slow);
+      this.bossFire(dt, slow);
     } else {
-      this.moveFormation(dt);
-      this.enemyFire(dt);
+      this.moveFormation(dt, slow);
+      this.enemyFire(dt, slow);
     }
 
     this.resolveCollisions();
     this.updateParticles(dt);
 
-    if (this.breakTimer <= 0 && this.wraiths.length === 0 && !this.gameOver) {
+    if (
+      this.breakTimer <= 0 &&
+      this.wraiths.length === 0 &&
+      !this.boss &&
+      !this.gameOver
+    ) {
       this.breakTimer = WAVE_BREAK;
       this.score += 100; // wave-clear bonus
       this.ctx.audio.playSfx('wave');
@@ -297,24 +395,45 @@ export class StarDefenderGame implements GameModule {
       return;
     }
     if (this.fireTimer > 0) return;
-    this.bullets.push({ x: this.px, y, prevX: this.px, prevY: y, vx: 0 });
-    this.fireTimer = FIRE_INTERVAL;
+    const shot = (dx: number, vx: number) =>
+      this.bullets.push({ x: this.px + dx, y, prevX: this.px + dx, prevY: y, vx });
+    if (this.active('spread')) {
+      shot(0, -NOVA_SPREAD);
+      shot(0, 0);
+      shot(0, NOVA_SPREAD);
+    } else if (this.active('twin')) {
+      shot(-1.8, 0);
+      shot(1.8, 0);
+    } else {
+      shot(0, 0);
+    }
+    this.fireTimer = this.active('rapid') ? RAPID_FIRE_INTERVAL : FIRE_INTERVAL;
     this.ctx.audio.playSfx('shoot');
   }
 
-  private moveBullets(dt: number): void {
+  private moveBullets(dt: number, slow: number): void {
     for (const b of this.bullets) {
       b.x += b.vx * dt;
       b.y -= BULLET_SPEED * dt;
     }
     this.bullets = this.bullets.filter((b) => b.y > -4 && b.x > -4 && b.x < FIELD_W + 4);
-    for (const eb of this.enemyBullets) eb.y += ENEMY_BULLET_SPEED * dt;
-    this.enemyBullets = this.enemyBullets.filter((eb) => eb.y < FIELD_H + 4);
+    for (const eb of this.enemyBullets) {
+      eb.x += eb.vx * slow * dt;
+      eb.y += eb.speed * slow * dt;
+    }
+    this.enemyBullets = this.enemyBullets.filter(
+      (eb) => eb.y < FIELD_H + 4 && eb.x > -4 && eb.x < FIELD_W + 4,
+    );
   }
 
-  private moveFormation(dt: number): void {
+  private movePowerups(dt: number): void {
+    for (const p of this.powerups) p.y += POWERUP_FALL * dt;
+    this.powerups = this.powerups.filter((p) => p.y < FIELD_H + 6);
+  }
+
+  private moveFormation(dt: number, slow: number): void {
     if (this.wraiths.length === 0) return;
-    this.offsetX += this.dir * this.speed * dt;
+    this.offsetX += this.dir * this.speed * slow * dt;
 
     let minHome = Infinity;
     let maxHome = -Infinity;
@@ -333,16 +452,48 @@ export class StarDefenderGame implements GameModule {
     }
   }
 
-  private enemyFire(dt: number): void {
+  private enemyFire(dt: number, slow: number): void {
     if (this.wraiths.length === 0) return;
-    this.enemyFireTimer -= dt;
+    this.enemyFireTimer -= dt * slow;
     if (this.enemyFireTimer > 0) return;
     // Prefer a front-most wraith per random column so shots feel "aimed".
     const shooter = this.wraiths[Math.floor(Math.random() * this.wraiths.length)]!;
     const x = this.enemyX(shooter);
     const y = this.enemyY(shooter) + EN_HH;
-    this.enemyBullets.push({ x, y, prevY: y });
+    this.enemyBullets.push({ x, y, prevX: x, prevY: y, vx: 0, speed: ENEMY_BULLET_SPEED });
     this.enemyFireTimer = enemyFireInterval(this.wave) * (0.6 + Math.random() * 0.8);
+  }
+
+  private moveBoss(dt: number, slow: number): void {
+    const b = this.boss;
+    if (!b) return;
+    if (b.hitFlash > 0) b.hitFlash = Math.max(0, b.hitFlash - dt * 4);
+    b.x += b.dir * BOSS_SPEED * slow * dt;
+    const margin = 2;
+    if (b.x <= BOSS_HW + margin) {
+      b.x = BOSS_HW + margin;
+      b.dir = 1;
+    } else if (b.x >= FIELD_W - BOSS_HW - margin) {
+      b.x = FIELD_W - BOSS_HW - margin;
+      b.dir = -1;
+    }
+  }
+
+  private bossFire(dt: number, slow: number): void {
+    const b = this.boss;
+    if (!b) return;
+    b.fireTimer -= dt * slow;
+    if (b.fireTimer > 0) return;
+    const y = b.y + BOSS_HH;
+    const push = (vx: number) =>
+      this.enemyBullets.push({ x: b.x, y, prevX: b.x, prevY: y, vx, speed: BOSS_BULLET_SPEED });
+    // A downward spread plus one shot aimed at the player.
+    push(-22);
+    push(0);
+    push(22);
+    push(clamp((this.px - b.x) * 0.55, -34, 34));
+    b.fireTimer = bossFireInterval(this.wave) * (0.8 + Math.random() * 0.5);
+    this.ctx.audio.playSfx('shoot');
   }
 
   private resolveCollisions(): void {
@@ -361,6 +512,7 @@ export class StarDefenderGame implements GameModule {
           this.charge = Math.min(CHARGE_MAX, this.charge + CHARGE_PER_KILL);
           this.spawnExplosion(ex, ey, w.color);
           this.ctx.audio.playSfx('explosion');
+          this.maybeDrop(ex, ey);
           if (!this.firstBloodAwarded) {
             this.firstBloodAwarded = true;
             this.ctx.emit.emit('trophy', { trophyId: 'firstBlood' });
@@ -370,7 +522,34 @@ export class StarDefenderGame implements GameModule {
       }
     }
 
-    if (this.invuln <= 0 && !this.gameOver) {
+    // Player bullets vs boss.
+    const boss = this.boss;
+    if (boss) {
+      for (let j = this.bullets.length - 1; j >= 0; j -= 1) {
+        const b = this.bullets[j]!;
+        if (!aabbHit(boss.x, boss.y, BOSS_HW, BOSS_HH, b.x, b.y, 1.2, 2.4)) continue;
+        this.bullets.splice(j, 1);
+        boss.hp -= 1;
+        boss.hitFlash = 1;
+        this.charge = Math.min(CHARGE_MAX, this.charge + CHARGE_PER_KILL * 0.25);
+        if (boss.hp % 3 === 0) this.ctx.audio.playSfx('bossHit');
+        if (boss.hp <= 0) {
+          this.killBoss(boss);
+          break;
+        }
+      }
+    }
+
+    // Power-ups vs player (always collectable, even while invulnerable).
+    for (let i = this.powerups.length - 1; i >= 0; i -= 1) {
+      const p = this.powerups[i]!;
+      if (aabbHit(this.px, PLAYER_Y, PLAYER_HW, PLAYER_HH, p.x, p.y, POWERUP_HW, POWERUP_HH)) {
+        this.powerups.splice(i, 1);
+        this.applyPower(p.kind);
+      }
+    }
+
+    if (this.invuln <= 0 && !this.active('shield') && !this.gameOver) {
       // Enemy bullets vs player.
       for (let j = this.enemyBullets.length - 1; j >= 0; j -= 1) {
         const eb = this.enemyBullets[j]!;
@@ -386,6 +565,11 @@ export class StarDefenderGame implements GameModule {
           this.loseLife();
           return;
         }
+      }
+      // Boss body crushing the ship.
+      if (boss && aabbHit(this.px, PLAYER_Y, PLAYER_HW, PLAYER_HH, boss.x, boss.y, BOSS_HW, BOSS_HH)) {
+        this.loseLife();
+        return;
       }
     }
 
@@ -405,6 +589,51 @@ export class StarDefenderGame implements GameModule {
     this.spawnExplosion(this.px, PLAYER_Y, '#ffd27a');
     this.ctx.audio.playSfx('hit');
     if (this.lives <= 0) this.endGame();
+  }
+
+  private maybeDrop(x: number, y: number): void {
+    if (Math.random() < DROP_CHANCE) this.spawnPower(x, y, pickPowerKind(Math.random()));
+  }
+
+  private spawnPower(x: number, y: number, kind: PowerKind): void {
+    this.powerups.push({ kind, x: clamp(x, POWERUP_HW, FIELD_W - POWERUP_HW), y, prevY: y });
+  }
+
+  private applyPower(kind: PowerKind): void {
+    const spec = POWERS[kind];
+    this.powerupsCollected += 1;
+    this.award('firstPower');
+    if (kind === 'life') {
+      if (this.lives < MAX_LIVES) {
+        this.lives += 1;
+        this.livesGained += 1;
+        this.award('lifeUp');
+      } else {
+        this.score += 100; // already maxed → small consolation
+      }
+      this.ctx.audio.playSfx('life');
+      this.flash = Math.max(this.flash, 0.3);
+      return;
+    }
+    this.fx[kind] = spec.duration;
+    this.ctx.audio.playSfx('powerup');
+    this.flash = Math.max(this.flash, 0.3);
+  }
+
+  private killBoss(boss: Boss): void {
+    this.bossKills += 1;
+    this.score += bossPoints(this.wave) * (this.nova ? 2 : 1);
+    this.charge = Math.min(CHARGE_MAX, this.charge + 30);
+    this.spawnExplosion(boss.x, boss.y, '#ff5db0');
+    this.spawnExplosion(boss.x, boss.y, '#ffd27a');
+    this.ctx.audio.playSfx('bossBoom');
+    this.flash = Math.max(this.flash, 0.8);
+    this.shake = Math.max(this.shake, 1.6);
+    // Guaranteed reward.
+    this.spawnPower(boss.x, boss.y, pickPowerKind(Math.random()));
+    this.award('bossSlayer');
+    if (this.bossKills >= 5) this.award('warlord');
+    this.boss = null;
   }
 
   private spawnExplosion(x: number, y: number, color: string): void {
@@ -451,7 +680,14 @@ export class StarDefenderGame implements GameModule {
     this.ctx.audio.playSfx('gameover');
     this.ctx.emit.emit('gameover', {
       score: this.score,
-      stats: { wave: this.wave, kills: this.kills, novas: this.novas },
+      stats: {
+        wave: this.wave,
+        kills: this.kills,
+        novas: this.novas,
+        bosses: this.bossKills,
+        powerups: this.powerupsCollected,
+        livesGained: this.livesGained,
+      },
     });
   }
 
@@ -478,8 +714,10 @@ export class StarDefenderGame implements GameModule {
 
     this.drawStars(g, X, Y, s);
     this.drawWraiths(g, X, Y, s, alpha);
+    this.drawBoss(g, X, Y, s, alpha);
     this.drawEnemyBullets(g, X, Y, s, alpha);
     this.drawBullets(g, X, Y, s, alpha);
+    this.drawPowerups(g, X, Y, s, alpha);
     this.drawParticles(g, X, Y, s);
     this.drawPlayer(g, X, Y, s, alpha);
     this.drawHud(g, X, Y, s, offX, offY);
@@ -551,10 +789,86 @@ export class StarDefenderGame implements GameModule {
     g.shadowColor = '#ff5d73';
     g.shadowBlur = 5;
     for (const eb of this.enemyBullets) {
+      const x = lerp(eb.prevX, eb.x, alpha);
       const y = lerp(eb.prevY, eb.y, alpha);
-      g.fillRect(X(eb.x) - s * 0.7, Y(y) - s, s * 1.4, s * 3);
+      g.fillRect(X(x) - s * 0.7, Y(y) - s, s * 1.4, s * 3);
     }
     g.shadowBlur = 0;
+  }
+
+  private drawBoss(
+    g: CanvasRenderingContext2D,
+    X: (x: number) => number,
+    Y: (y: number) => number,
+    s: number,
+    alpha: number,
+  ): void {
+    const b = this.boss;
+    if (!b) return;
+    const cx = X(lerp(b.prevX, b.x, alpha));
+    const cy = Y(b.y);
+    const hw = BOSS_HW * s;
+    const hh = BOSS_HH * s;
+    const color = b.hitFlash > 0 ? '#ffffff' : '#ff5db0';
+    g.fillStyle = color;
+    g.shadowColor = '#ff5db0';
+    g.shadowBlur = 14;
+    // Menacing winged hull.
+    g.beginPath();
+    g.moveTo(cx, cy - hh);
+    g.lineTo(cx + hw, cy - hh * 0.2);
+    g.lineTo(cx + hw * 0.55, cy + hh);
+    g.lineTo(cx - hw * 0.55, cy + hh);
+    g.lineTo(cx - hw, cy - hh * 0.2);
+    g.closePath();
+    g.fill();
+    g.shadowBlur = 0;
+    // Core eye.
+    g.fillStyle = '#2a0a18';
+    g.fillRect(cx - hw * 0.35, cy - hh * 0.2, hw * 0.7, hh * 0.5);
+    g.fillStyle = '#ffd27a';
+    g.fillRect(cx - hw * 0.12, cy - hh * 0.1, hw * 0.24, hh * 0.3);
+    // HP bar above the boss.
+    const bw = hw * 2;
+    const bx = cx - hw;
+    const by = cy - hh - 4 * s;
+    g.fillStyle = 'rgba(20,11,43,0.85)';
+    g.fillRect(bx, by, bw, 1.6 * s);
+    g.fillStyle = '#ff5d73';
+    g.fillRect(bx, by, bw * clamp(b.hp / b.maxHp, 0, 1), 1.6 * s);
+  }
+
+  private drawPowerups(
+    g: CanvasRenderingContext2D,
+    X: (x: number) => number,
+    Y: (y: number) => number,
+    s: number,
+    alpha: number,
+  ): void {
+    for (const p of this.powerups) {
+      const y = lerp(p.prevY, p.y, alpha);
+      const cx = X(p.x);
+      const cy = Y(y);
+      const r = POWERUP_HW * s;
+      const spec = POWERS[p.kind];
+      g.fillStyle = spec.color;
+      g.shadowColor = spec.color;
+      g.shadowBlur = 10;
+      // Diamond capsule.
+      g.beginPath();
+      g.moveTo(cx, cy - r);
+      g.lineTo(cx + r, cy);
+      g.lineTo(cx, cy + r);
+      g.lineTo(cx - r, cy);
+      g.closePath();
+      g.fill();
+      g.shadowBlur = 0;
+      g.fillStyle = '#0b0820';
+      g.font = `bold ${Math.round(r * 1.3)}px monospace`;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(spec.letter, cx, cy + 0.5);
+    }
   }
 
   private drawBullets(
@@ -637,6 +951,15 @@ export class StarDefenderGame implements GameModule {
     g.beginPath();
     g.arc(cx, cy - hh * 0.05, hw * 0.28, 0, Math.PI * 2);
     g.fill();
+
+    // Shield bubble.
+    if (this.active('shield')) {
+      g.strokeStyle = `rgba(126,166,255,${0.55 + 0.3 * Math.sin(this.fx.shield * 8)})`;
+      g.lineWidth = Math.max(1.4, s);
+      g.beginPath();
+      g.arc(cx, cy, hw * 1.5, 0, Math.PI * 2);
+      g.stroke();
+    }
   }
 
   private drawHud(
@@ -675,13 +998,36 @@ export class StarDefenderGame implements GameModule {
     g.fillStyle = '#ffd27a';
     g.fillText('▲'.repeat(Math.max(0, this.lives)), barX + barW, barY + barH + 2 * s);
 
-    // Wave banner during the breather.
+    // Active power-up chips (timed buffs only) below the charge label.
+    let chipX = barX;
+    const chipY = barY + barH + 7 * s;
+    const chipS = 6 * s;
+    for (const k of POWER_KINDS) {
+      if (this.fx[k] <= 0) continue;
+      const spec = POWERS[k];
+      g.fillStyle = spec.color;
+      g.fillRect(chipX, chipY, chipS, chipS);
+      g.fillStyle = '#0b0820';
+      g.font = `bold ${Math.round(3.4 * s)}px monospace`;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(spec.letter, chipX + chipS / 2, chipY + chipS / 2 + 0.5);
+      g.fillStyle = 'rgba(255,255,255,0.5)';
+      g.fillRect(chipX, chipY + chipS + s * 0.4, chipS * clamp(this.fx[k] / spec.duration, 0, 1), s);
+      chipX += chipS + 2 * s;
+    }
+    g.textBaseline = 'top';
+
+    // Wave banner during the breather (a boss warning if one is next).
     if (this.breakTimer > 0) {
-      g.fillStyle = 'rgba(126,166,255,0.95)';
+      const nextIsBoss = isBossWave(this.wave + 1);
+      g.fillStyle = nextIsBoss ? 'rgba(255,93,176,0.95)' : 'rgba(126,166,255,0.95)';
       g.font = `${Math.round(8 * s)}px monospace`;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
-      const label2 = this.ctx.i18n('starDefender:waveBanner', { wave: this.wave + 1 });
+      const label2 = nextIsBoss
+        ? this.ctx.i18n('starDefender:bossBanner')
+        : this.ctx.i18n('starDefender:waveBanner', { wave: this.wave + 1 });
       g.fillText(label2, offX + (FIELD_W * s) / 2, offY + (FIELD_H * s) / 2);
     }
   }

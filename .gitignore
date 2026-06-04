@@ -6,6 +6,7 @@ __pycache__/
 dist/
 build/
 .DS_Store
+.claude/
 
 # TypeScript incremental build cache
 *.tsbuildinfo

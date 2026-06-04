@@ -332,18 +332,23 @@ export const ptBR = {
     hudReady: 'Nova pronta',
     hudNova: 'Nova',
     waveBanner: 'Onda {{wave}}',
+    bossBanner: 'Chefe!',
     controls: {
       fire: 'Atirar (segure)',
       nova: 'Nova',
     },
     howToPlay:
-      'Use o direcional (ou as setas) para mover a nave: esquerda/direita pilotam. Segure o botão de tiro para atirar (não é mais automático). Destrua os wraiths antes que cheguem embaixo e desvie dos tiros deles. Cada abate enche a Carga; quando estiver cheia, toque no botão Nova para disparar — alguns segundos de barragem tripla automática, pontos em dobro e a tela limpa de tiros inimigos. Você tem 3 vidas.',
+      'Use o direcional (ou as setas) para mover a nave: esquerda/direita pilotam. Segure o botão de tiro para atirar (não é mais automático). Destrua os wraiths antes que cheguem embaixo e desvie dos tiros deles. Alguns inimigos abatidos largam power-ups (escudo, tiro rápido, tiro duplo, leque, câmera lenta e vida extra) — pegue-os com a nave. Cada abate enche a Carga; quando estiver cheia, toque no botão Nova para disparar — alguns segundos de barragem tripla automática, pontos em dobro e a tela limpa de tiros inimigos. A cada 4 ondas surge um chefe com bastante vida e padrão de tiro; derrubá-lo dá muitos pontos e um power-up. Você começa com 3 vidas (máx. 5).',
     trophies: {
       firstBlood: { name: 'Primeiro abate', description: 'Destrua seu primeiro wraith.' },
       vanguard: { name: 'Vanguarda', description: 'Chegue à onda 3.' },
       nova: { name: 'Supernova', description: 'Dispare a Nova uma vez.' },
       sharpshooter: { name: 'Atirador de elite', description: 'Destrua 100 wraiths em uma partida.' },
       highScore: { name: 'Lenda das estrelas', description: 'Faça 10.000 pontos.' },
+      firstPower: { name: 'Reforço', description: 'Pegue um power-up.' },
+      lifeUp: { name: 'Vida extra', description: 'Ganhe uma vida com um power-up.' },
+      bossSlayer: { name: 'Caça-chefes', description: 'Derrote um chefe.' },
+      warlord: { name: 'Senhor da guerra', description: 'Derrote 5 chefes em uma partida.' },
     },
   },
   brickBounce: {

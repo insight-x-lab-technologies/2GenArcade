@@ -334,18 +334,23 @@ export const en: AppResources = {
     hudReady: 'Nova ready',
     hudNova: 'Nova',
     waveBanner: 'Wave {{wave}}',
+    bossBanner: 'Boss!',
     controls: {
       fire: 'Fire (hold)',
       nova: 'Nova',
     },
     howToPlay:
-      'Use the d-pad (or arrow keys) to move the ship: left/right steer. Hold the fire button to shoot (it is no longer automatic). Destroy the wraiths before they reach the bottom and dodge their shots. Each kill charges the Nova; when it is full, tap the Nova button to unleash it — a few seconds of automatic triple barrage, double points and a clean sweep of enemy fire. You have 3 lives.',
+      'Use the d-pad (or arrow keys) to move the ship: left/right steer. Hold the fire button to shoot (it is no longer automatic). Destroy the wraiths before they reach the bottom and dodge their shots. Some destroyed enemies drop power-ups (shield, rapid fire, twin shot, spread, slow-mo and an extra life) — catch them with your ship. Each kill charges the Nova; when it is full, tap the Nova button to unleash it — a few seconds of automatic triple barrage, double points and a clean sweep of enemy fire. Every 4 waves a boss appears with heavy health and a firing pattern; taking it down pays big points and a power-up. You start with 3 lives (max 5).',
     trophies: {
       firstBlood: { name: 'First blood', description: 'Destroy your first wraith.' },
       vanguard: { name: 'Vanguard', description: 'Reach wave 3.' },
       nova: { name: 'Supernova', description: 'Unleash the Nova once.' },
       sharpshooter: { name: 'Sharpshooter', description: 'Destroy 100 wraiths in one run.' },
       highScore: { name: 'Star legend', description: 'Score 10,000 points.' },
+      firstPower: { name: 'Powered up', description: 'Grab a power-up.' },
+      lifeUp: { name: 'Extra life', description: 'Gain a life from a power-up.' },
+      bossSlayer: { name: 'Boss slayer', description: 'Defeat a boss.' },
+      warlord: { name: 'Warlord', description: 'Defeat 5 bosses in one run.' },
     },
   },
   brickBounce: {

@@ -109,6 +109,35 @@ const sfx: Record<string, SfxDef> = {
       { note: 'B4', dur: '8n', time: 0.16 },
     ],
   },
+  powerup: {
+    wave: 'square',
+    volumeDb: -13,
+    notes: [
+      { note: 'B4', dur: '16n', time: 0 },
+      { note: 'F#5', dur: '16n', time: 0.05 },
+      { note: 'B5', dur: '8n', time: 0.1 },
+    ],
+  },
+  life: {
+    wave: 'triangle',
+    volumeDb: -11,
+    notes: [
+      { note: 'D5', dur: '16n', time: 0 },
+      { note: 'F#5', dur: '16n', time: 0.06 },
+      { note: 'A5', dur: '16n', time: 0.12 },
+      { note: 'D6', dur: '8n', time: 0.18 },
+    ],
+  },
+  bossHit: { wave: 'square', volumeDb: -26, notes: [{ note: 'E3', dur: '32n' }] },
+  bossBoom: {
+    wave: 'noise',
+    volumeDb: -6,
+    notes: [
+      { note: 'B2', dur: '16n', time: 0 },
+      { note: 'F#2', dur: '8n', time: 0.07 },
+      { note: 'B1', dur: '4n', time: 0.16 },
+    ],
+  },
   gameover: {
     wave: 'sawtooth',
     volumeDb: -9,

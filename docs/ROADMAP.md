@@ -169,7 +169,7 @@ power-ups, ao contrário de River Run/Road Burner).
 ### E.2. Nova manual (botão de bomba) — `P1` · `S` (depende de A1) — ✅ FEITO (2026-06-04)
 - Acionar o Nova como "smart bomb" no momento certo, em vez de automático.
 
-### E.3. Sistema de power-ups + chefes — `P1` · `L`
+### E.3. Sistema de power-ups + chefes — `P1` · `L` — ✅ FEITO (2026-06-04)
 - Trazer o padrão de power-ups dos outros jogos (escudo, rapid, double, vida
   extra). Chefe ao fim de cada N ondas com padrão de ataque.
 

@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   aabbHit,
   BASE_ROWS,
+  BOSS_EVERY,
+  bossHp,
+  bossIndex,
   clampOffsetX,
   COLS,
   EN_HW,
@@ -11,7 +14,10 @@ import {
   FORMATION_MARGIN,
   homeX,
   invaded,
+  isBossWave,
   MAX_ROWS,
+  pickPowerKind,
+  POWER_KINDS,
   reverseIfEdge,
   rowPoints,
   rowsForWave,
@@ -90,5 +96,26 @@ describe('aabbHit', () => {
     expect(aabbHit(0, 0, 4, 3, 3, 0, 4, 3)).toBe(true); // dx 3 <= 8
     expect(aabbHit(0, 0, 4, 3, 20, 0, 4, 3)).toBe(false);
     expect(aabbHit(0, 0, 4, 3, 0, 10, 4, 3)).toBe(false);
+  });
+});
+
+describe('boss schedule', () => {
+  it('flags every Nth wave as a boss wave with a growing index', () => {
+    expect(isBossWave(BOSS_EVERY)).toBe(true);
+    expect(isBossWave(BOSS_EVERY * 2)).toBe(true);
+    expect(isBossWave(BOSS_EVERY - 1)).toBe(false);
+    expect(isBossWave(1)).toBe(false);
+    expect(bossIndex(BOSS_EVERY)).toBe(1);
+    expect(bossIndex(BOSS_EVERY * 3)).toBe(3);
+    expect(bossIndex(3)).toBe(0);
+  });
+  it('makes later bosses tougher', () => {
+    expect(bossHp(BOSS_EVERY * 2)).toBeGreaterThan(bossHp(BOSS_EVERY));
+  });
+});
+
+describe('pickPowerKind', () => {
+  it('always returns a known kind across the [0,1) range', () => {
+    for (let r = 0; r < 1; r += 0.013) expect(POWER_KINDS).toContain(pickPowerKind(r));
   });
 });

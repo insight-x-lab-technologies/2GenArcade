@@ -51,5 +51,33 @@ export const starDefenderMeta: GameMeta = {
       icon: '👑',
       condition: (c) => c.score >= 10000,
     },
+    {
+      id: 'firstPower',
+      nameKey: 'starDefender:trophies.firstPower.name',
+      descriptionKey: 'starDefender:trophies.firstPower.description',
+      icon: '🎁',
+      condition: (c) => (c.stats.powerups ?? 0) >= 1,
+    },
+    {
+      id: 'lifeUp',
+      nameKey: 'starDefender:trophies.lifeUp.name',
+      descriptionKey: 'starDefender:trophies.lifeUp.description',
+      icon: '❤️',
+      condition: (c) => (c.stats.livesGained ?? 0) >= 1,
+    },
+    {
+      id: 'bossSlayer',
+      nameKey: 'starDefender:trophies.bossSlayer.name',
+      descriptionKey: 'starDefender:trophies.bossSlayer.description',
+      icon: '🗡️',
+      condition: (c) => (c.stats.bosses ?? 0) >= 1,
+    },
+    {
+      id: 'warlord',
+      nameKey: 'starDefender:trophies.warlord.name',
+      descriptionKey: 'starDefender:trophies.warlord.description',
+      icon: '🔱',
+      condition: (c) => (c.stats.bosses ?? 0) >= 5,
+    },
   ],
 };
