@@ -17,6 +17,7 @@ const stubCtx2d = () => {
 function makeContext() {
   const events: Array<{ type: keyof GameEventMap; payload: unknown }> = [];
   const held = new Set<Direction>();
+  const heldButtons = new Set<string>();
   const canvas = { getContext: () => stubCtx2d() } as unknown as HTMLCanvasElement;
 
   const ctx: GameContext = {
@@ -24,7 +25,7 @@ function makeContext() {
     input: {
       subscribe: () => () => undefined,
       isHeld: (d) => held.has(d),
-      isButtonHeld: () => false,
+      isButtonHeld: (id) => heldButtons.has(id),
     },
     audio: { playMusic: vi.fn(), stopMusic: vi.fn(), playSfx: vi.fn() },
     storage: { get: (_k, fb) => fb, set: () => undefined, remove: () => undefined },
@@ -34,7 +35,7 @@ function makeContext() {
     viewport: { width: 360, height: 640 },
   };
 
-  return { ctx, events, held };
+  return { ctx, events, held, heldButtons };
 }
 
 describe('RoadBurnerGame (integration)', () => {
@@ -89,6 +90,25 @@ describe('RoadBurnerGame (integration)', () => {
     ]) {
       expect(payload.stats).toHaveProperty(key);
     }
+    game.destroy();
+  });
+
+  it('drives with the manual Nitro held and periodic dash taps without throwing', () => {
+    const { ctx, held, heldButtons } = makeContext();
+    const game = new RoadBurnerGame();
+    game.init(ctx);
+    heldButtons.add('nitro'); // held: ignites whenever Burn fills
+    expect(() => {
+      for (let i = 0; i < 600; i += 1) {
+        held.clear();
+        held.add('up');
+        held.add(i % 40 < 20 ? 'right' : 'left');
+        heldButtons.delete('dash');
+        if (i % 30 === 0) heldButtons.add('dash'); // rising-edge dash taps
+        game.update(1 / 60);
+        if (i % 7 === 0) game.render((i % 60) / 60);
+      }
+    }).not.toThrow();
     game.destroy();
   });
 

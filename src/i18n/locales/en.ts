@@ -171,9 +171,13 @@ export const en: AppResources = {
     hudLevel: 'Level',
     hudLines: 'Lines',
     hudNext: 'Next',
+    hudHold: 'Hold',
     hudOverdrive: 'Overdrive',
+    controls: {
+      hold: 'Hold piece',
+    },
     howToPlay:
-      'Swipe sideways to move, tap to rotate, swipe down to soft drop and hold to hard drop. Clear lines to charge Overdrive.',
+      'Swipe sideways to move, tap to rotate, swipe down to soft drop and hold to hard drop. The ghost shows where the piece lands and the Next piece is shown up top. Tap the Hold button to bank the current piece and swap it back later (once per piece). Clear lines to charge Overdrive.',
     trophies: {
       firstLines: { name: 'First spark', description: 'Clear your first line.' },
       comboMaster: { name: 'Combo master', description: 'Clear 4 lines at once.' },
@@ -186,8 +190,12 @@ export const en: AppResources = {
     hudLevel: 'Level',
     hudCombo: 'Combo',
     hudSurge: 'Surge',
+    hudReady: 'Surge ready',
+    controls: {
+      surge: 'Surge',
+    },
     howToPlay:
-      'Swipe or use the d-pad to turn the Coil. Collect orbs to grow and score; chain orbs to build a combo. Prism orbs are worth more but expire fast. Filling Surge lets you phase through your own body and doubles points for a few seconds. Hitting a wall or yourself ends the run.',
+      'Swipe or use the d-pad to turn the Coil. Collect orbs to grow and score; chain orbs to build a combo. Prism orbs are worth more but expire fast. Filling Surge arms it — tap the Surge button to trigger it and phase through your own body, doubling points for a few seconds (save it for when you are boxed in). Hitting a wall or yourself ends the run.',
     trophies: {
       firstOrb: { name: 'First spark', description: 'Collect your first orb.' },
       combo: { name: 'On fire', description: 'Reach a 5-orb combo.' },
@@ -269,9 +277,14 @@ export const en: AppResources = {
   roadBurner: {
     hudBurn: 'Burn',
     hudNitro: 'Nitro',
+    hudReady: 'Nitro ready',
     hudDistance: 'Distance',
+    controls: {
+      nitro: 'Nitro',
+      dash: 'Dash',
+    },
     howToPlay:
-      'Use the d-pad (or arrow keys) to weave through traffic: left/right steer, hold up to accelerate and down to brake. Graze past vehicles (bike, car, truck, rig) to charge Burn — when full, Nitro auto-ignites (extra speed and points, phase-through). Grab power-ups for temporary edges. The road changes terrain (asphalt, rain, mud, snow), altering speed and grip, and a day→afternoon→night cycle changes visibility. Crashing into traffic ends the run.',
+      'Use the d-pad (or arrow keys) to weave through traffic: left/right steer, hold up to accelerate and down to brake. Graze past vehicles (bike, car, truck, rig) to charge Burn — when full, tap the Nitro button to fire it (extra speed and points, phase-through). The dash button gives a quick lateral sidestep in the direction you are holding — great for dodging a crash, even in rain or mud. Grab power-ups for temporary edges. The road changes terrain (asphalt, rain, mud, snow), altering speed and grip, and a day→afternoon→night cycle changes visibility. Crashing into traffic ends the run.',
     terrains: {
       asphalt: 'Asphalt',
       rain: 'Rain',
@@ -356,11 +369,15 @@ export const en: AppResources = {
   brickBounce: {
     hudCharge: 'Blaze',
     hudBlaze: 'Blazing!',
+    hudReady: 'Blaze ready',
     hudLevel: 'Level {{level}}',
     levelBanner: 'Level {{level}}',
     levelClear: 'Wall cleared!',
     blazeOn: 'Blaze Ball!',
     launchHint: 'Tap up to launch',
+    controls: {
+      blaze: 'Blaze',
+    },
     powers: {
       widen: 'Wide paddle',
       multi: 'Multiball',
@@ -371,7 +388,7 @@ export const en: AppResources = {
       bonus: 'Bonus +500',
     },
     howToPlay:
-      'Use the d-pad (or arrow keys) to move the paddle and tap up to launch the ball. Bounce the ball to smash every brick — back rows take more hits. Clearing the wall advances to a faster, tougher level. Each hit fills the Blaze; when it tops out the ball ignites, ploughs through bricks and scores double for a few seconds. Bricks can drop power-ups: catch them with the paddle. You have 3 lives — lose one if your last ball falls.',
+      'Use the d-pad (or arrow keys) to move the paddle and tap up to launch the ball — an aim line previews the serve angle (move the paddle to adjust). Bounce the ball to smash every brick — back rows take more hits. Clearing the wall advances to a faster, tougher level. Each hit fills the Blaze; when it tops out, tap the Blaze button to ignite it: the ball ploughs through bricks and scores double for a few seconds. Bricks can drop power-ups: catch them with the paddle. You have 3 lives — lose one if your last ball falls.',
     trophies: {
       firstBrick: { name: 'First smash', description: 'Break your first brick.' },
       demolisher: { name: 'Demolisher', description: 'Break 100 bricks in one run.' },

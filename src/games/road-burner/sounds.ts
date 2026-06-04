@@ -90,6 +90,14 @@ const sfx: Record<string, SfxDef> = {
       { note: 'G4', dur: '8n', time: 0.18 },
     ],
   },
+  dash: {
+    wave: 'triangle',
+    volumeDb: -15,
+    notes: [
+      { note: 'E5', dur: '32n', time: 0 },
+      { note: 'B5', dur: '32n', time: 0.04 },
+    ],
+  },
   crash: {
     wave: 'noise',
     volumeDb: -8,

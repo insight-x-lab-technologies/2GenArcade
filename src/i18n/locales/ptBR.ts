@@ -169,9 +169,13 @@ export const ptBR = {
     hudLevel: 'Nível',
     hudLines: 'Linhas',
     hudNext: 'Próxima',
+    hudHold: 'Reserva',
     hudOverdrive: 'Sobrecarga',
+    controls: {
+      hold: 'Reservar peça',
+    },
     howToPlay:
-      'Arraste para os lados para mover, toque para girar, arraste para baixo para descer rápido e segure para soltar de vez. Limpe linhas para encher a Sobrecarga.',
+      'Arraste para os lados para mover, toque para girar, arraste para baixo para descer rápido e segure para soltar de vez. A sombra mostra onde a peça cai e a "Próxima" aparece no topo. Toque no botão Reservar para guardar a peça atual e trocá-la depois (uma vez por peça). Limpe linhas para encher a Sobrecarga.',
     trophies: {
       firstLines: { name: 'Primeira faísca', description: 'Limpe sua primeira linha.' },
       comboMaster: { name: 'Mestre do combo', description: 'Limpe 4 linhas de uma vez.' },
@@ -184,8 +188,12 @@ export const ptBR = {
     hudLevel: 'Nível',
     hudCombo: 'Combo',
     hudSurge: 'Descarga',
+    hudReady: 'Descarga pronta',
+    controls: {
+      surge: 'Descarga',
+    },
     howToPlay:
-      'Arraste ou use o direcional para virar a Espiral. Colete orbes para crescer e pontuar; encadeie orbes para somar combo. Orbes-prisma valem mais, mas duram pouco. Encher a Descarga atravessa seu próprio corpo e dobra os pontos por alguns segundos. Bater nas paredes ou em si mesmo encerra o jogo.',
+      'Arraste ou use o direcional para virar a Espiral. Colete orbes para crescer e pontuar; encadeie orbes para somar combo. Orbes-prisma valem mais, mas duram pouco. Encher a Descarga deixa-a pronta — toque no botão Descarga para ativá-la e atravessar seu próprio corpo, dobrando os pontos por alguns segundos (guarde-a para quando estiver encurralado). Bater nas paredes ou em si mesmo encerra o jogo.',
     trophies: {
       firstOrb: { name: 'Primeira faísca', description: 'Colete seu primeiro orbe.' },
       combo: { name: 'Em chamas', description: 'Alcance um combo de 5.' },
@@ -267,9 +275,14 @@ export const ptBR = {
   roadBurner: {
     hudBurn: 'Combustão',
     hudNitro: 'Nitro',
+    hudReady: 'Nitro pronto',
     hudDistance: 'Distância',
+    controls: {
+      nitro: 'Nitro',
+      dash: 'Esquiva',
+    },
     howToPlay:
-      'Use o direcional (ou as setas) para costurar o trânsito: esquerda/direita pilotam, segure cima para acelerar e baixo para frear. Passe raspando nos veículos (moto, carro, caminhão, jamanta) para encher o Combustão — cheio, o Nitro dispara sozinho (velocidade e pontos extras, travessia). Pegue power-ups para vantagens temporárias. A pista muda de terreno (asfalto, chuva, barro, neve), alterando velocidade e aderência, e o ciclo dia→tarde→noite muda a visibilidade. Bater no trânsito encerra a corrida.',
+      'Use o direcional (ou as setas) para costurar o trânsito: esquerda/direita pilotam, segure cima para acelerar e baixo para frear. Passe raspando nos veículos (moto, carro, caminhão, jamanta) para encher o Combustão — quando enche, toque no botão Nitro para dispará-lo (velocidade e pontos extras, travessia). O botão de esquiva dá uma arrancada lateral rápida na direção que você estiver segurando — ótimo para desviar de uma batida, mesmo na chuva ou no barro. Pegue power-ups para vantagens temporárias. A pista muda de terreno (asfalto, chuva, barro, neve), alterando velocidade e aderência, e o ciclo dia→tarde→noite muda a visibilidade. Bater no trânsito encerra a corrida.',
     terrains: {
       asphalt: 'Asfalto',
       rain: 'Chuva',
@@ -354,11 +367,15 @@ export const ptBR = {
   brickBounce: {
     hudCharge: 'Chama',
     hudBlaze: 'Em chamas!',
+    hudReady: 'Chama pronta',
     hudLevel: 'Fase {{level}}',
     levelBanner: 'Fase {{level}}',
     levelClear: 'Fase limpa!',
     blazeOn: 'Bola de fogo!',
     launchHint: 'Toque em cima para lançar',
+    controls: {
+      blaze: 'Bola de fogo',
+    },
     powers: {
       widen: 'Raquete larga',
       multi: 'Multibola',
@@ -369,7 +386,7 @@ export const ptBR = {
       bonus: 'Bônus +500',
     },
     howToPlay:
-      'Use o direcional (ou as setas) para mover a raquete e toque em cima para lançar a bola. Rebata a bola para quebrar todos os blocos — os de trás aguentam mais batidas. Limpar a parede avança para uma fase mais rápida e resistente. Cada batida enche a Chama; quando enche, a bola pega fogo, atravessa os blocos e vale o dobro por alguns segundos. Blocos podem soltar power-ups: pegue-os com a raquete. Você tem 3 vidas — perde uma se deixar a última bola cair.',
+      'Use o direcional (ou as setas) para mover a raquete e toque em cima para lançar a bola — uma linha de mira mostra o ângulo do saque (mova a raquete para ajustar). Rebata a bola para quebrar todos os blocos — os de trás aguentam mais batidas. Limpar a parede avança para uma fase mais rápida e resistente. Cada batida enche a Chama; quando enche, toque no botão Bola de fogo para acendê-la: ela atravessa os blocos e vale o dobro por alguns segundos. Blocos podem soltar power-ups: pegue-os com a raquete. Você tem 3 vidas — perde uma se deixar a última bola cair.',
     trophies: {
       firstBrick: { name: 'Primeira batida', description: 'Quebre seu primeiro bloco.' },
       demolisher: { name: 'Demolidor', description: 'Quebre 100 blocos em uma partida.' },

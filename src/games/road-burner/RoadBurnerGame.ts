@@ -7,6 +7,9 @@ import {
   BURN_PER_PASS,
   CAR_HH,
   CAR_HW,
+  DASH_COOLDOWN,
+  DASH_SPEED,
+  DASH_TIME,
   FIELD_H,
   FIELD_W,
   gripApproach,
@@ -175,6 +178,11 @@ export class RoadBurnerGame implements GameModule {
   private burn = 0;
   private nitro = false;
   private nitroTime = 0;
+  private prevNitroHeld = false;
+  private prevDashHeld = false;
+  private dashTimer = 0;
+  private dashDir = 0;
+  private dashCd = 0;
   private fx: Record<PowerKind, number> = this.zeroFx();
 
   private score = 0;
@@ -232,6 +240,11 @@ export class RoadBurnerGame implements GameModule {
     this.burn = 0;
     this.nitro = false;
     this.nitroTime = 0;
+    this.prevNitroHeld = false;
+    this.prevDashHeld = false;
+    this.dashTimer = 0;
+    this.dashDir = 0;
+    this.dashCd = 0;
     this.fx = this.zeroFx();
     this.score = 0;
     this.bonus = 0;
@@ -306,16 +319,25 @@ export class RoadBurnerGame implements GameModule {
       this.award('nightrider');
     }
 
+    // Action buttons (D.1): Nitro is now manually ignited, plus a lateral dash.
+    const nitroHeld = input.isButtonHeld('nitro');
+    const nitroEdge = nitroHeld && !this.prevNitroHeld;
+    this.prevNitroHeld = nitroHeld;
+    const dashHeld = input.isButtonHeld('dash');
+    const dashEdge = dashHeld && !this.prevDashHeld;
+    this.prevDashHeld = dashHeld;
+
     // Throttle: up = gas, down = brake. Terrain caps the speed.
     const gas = input.isHeld('up');
     const brake = input.isHeld('down');
     const throttle = gas && !brake ? 1 : brake ? -1 : 0;
     let speed = speedFor(throttle, this.distance) * terrain.speedMul;
 
-    // Surge pins the Burn gauge full so Nitro keeps re-igniting.
+    // Surge pins the Burn gauge full so Nitro stays ready to re-fire.
     if (this.active('surge')) this.burn = BURN_MAX;
 
-    // Burn → Nitro (the signature risk/reward payoff).
+    // Burn → Nitro: fills on near-misses, then the player taps Nitro to cash it
+    // in (manual since D.1, for control/strategy) for the speed/score payoff.
     if (this.nitro) {
       this.nitroTime -= dt;
       speed += NITRO_SPEED_BONUS;
@@ -324,13 +346,8 @@ export class RoadBurnerGame implements GameModule {
         this.nitro = false;
         this.burn = this.active('surge') ? BURN_MAX : 0;
       }
-    } else if (this.burn >= BURN_MAX) {
-      this.nitro = true;
-      this.nitroTime = NITRO_DURATION;
-      this.nitros += 1;
-      this.ctx.audio.playSfx('nitro');
-      this.setFlash('#ffd27a', 0.5);
-      this.award('burnout');
+    } else if (nitroEdge && this.burn >= BURN_MAX) {
+      this.igniteNitro();
     }
 
     if (this.active('turbo')) speed += TURBO_SPEED_BONUS;
@@ -340,9 +357,22 @@ export class RoadBurnerGame implements GameModule {
     if (scoreMul > 1) this.bonus += speed * dt * (scoreMul - 1);
 
     // Steering with lateral grip (slidey on mud/snow unless Grip power-up is on).
-    const grip = this.active('grip') ? 1 : terrain.grip;
+    // A dash overrides grip with a crisp sidestep burst in the held direction.
+    if (this.dashCd > 0) this.dashCd -= dt;
     const dir = (input.isHeld('right') ? 1 : 0) - (input.isHeld('left') ? 1 : 0);
-    this.pvx = gripApproach(this.pvx, dir * STEER_TARGET, grip, dt);
+    if (dashEdge && this.dashCd <= 0 && dir !== 0) {
+      this.dashDir = dir;
+      this.dashTimer = DASH_TIME;
+      this.dashCd = DASH_COOLDOWN;
+      this.ctx.audio.playSfx('dash');
+    }
+    const grip = this.active('grip') ? 1 : terrain.grip;
+    if (this.dashTimer > 0) {
+      this.dashTimer -= dt;
+      this.pvx = this.dashDir * DASH_SPEED;
+    } else {
+      this.pvx = gripApproach(this.pvx, dir * STEER_TARGET, grip, dt);
+    }
     const phw = CAR_HW * (this.active('mini') ? MINI_SCALE : 1);
     const road = roadAt(worldYAt(this.distance, PLAYER_Y));
     let nx = this.px + this.pvx * dt;
@@ -384,6 +414,15 @@ export class RoadBurnerGame implements GameModule {
   private setFlash(color: string, amount: number): void {
     this.flashColor = color;
     this.flash = Math.max(this.flash, amount);
+  }
+
+  private igniteNitro(): void {
+    this.nitro = true;
+    this.nitroTime = NITRO_DURATION;
+    this.nitros += 1;
+    this.ctx.audio.playSfx('nitro');
+    this.setFlash('#ffd27a', 0.5);
+    this.award('burnout');
   }
 
   private spawnTraffic(dt: number): void {
@@ -961,10 +1000,15 @@ export class RoadBurnerGame implements GameModule {
 
     g.font = `${Math.round(3.2 * s)}px monospace`;
     g.textBaseline = 'top';
-    g.fillStyle = '#cdbce8';
     g.textAlign = 'left';
-    const label = this.ctx.i18n(this.nitro ? 'roadBurner:hudNitro' : 'roadBurner:hudBurn');
-    g.fillText(label.toUpperCase(), barX, barY + barH + 2 * s);
+    const ready = !this.nitro && this.burn >= BURN_MAX;
+    const labelKey = this.nitro
+      ? 'roadBurner:hudNitro'
+      : ready
+        ? 'roadBurner:hudReady'
+        : 'roadBurner:hudBurn';
+    g.fillStyle = ready ? '#ffd27a' : '#cdbce8';
+    g.fillText(this.ctx.i18n(labelKey).toUpperCase(), barX, barY + barH + 2 * s);
     g.textAlign = 'right';
     g.fillText(`${Math.floor(this.distance)} m`, barX + barW, barY + barH + 2 * s);
 

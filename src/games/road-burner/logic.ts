@@ -46,6 +46,12 @@ export const TURBO_SPEED_BONUS = 32;
 // terrain it slides, which is what makes mud/snow interesting.
 export const STEER_TARGET = 88; // target lateral speed at full input
 
+// Lateral dash (D.1) — a quick sidestep for evasion. Bypasses grip so it works
+// even on slick terrain, then a short cooldown gates the next one.
+export const DASH_SPEED = 260; // lateral units/s during the dash burst
+export const DASH_TIME = 0.16; // seconds the dash burst lasts
+export const DASH_COOLDOWN = 0.7; // seconds before another dash is allowed
+
 // Burn / Nitro — the signature risk/reward mechanic.
 export const BURN_MAX = 100;
 export const BURN_PER_PASS = 20; // a near-miss overtake adds this much

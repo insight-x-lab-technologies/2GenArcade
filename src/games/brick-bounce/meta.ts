@@ -24,6 +24,9 @@ export const brickBounceMeta: GameMeta = {
   scoreType: 'points',
   scoreIsEndless: true,
   controlScheme: 'dpad',
+  actionButtons: [
+    { id: 'blaze', labelKey: 'brickBounce:controls.blaze', glyph: '🔥', accent: 'coral', mode: 'tap' },
+  ],
   howToPlayKey: 'brickBounce:howToPlay',
   thumbnail: '🧱',
   trophies: TROPHIES.map(([id, icon, condition]) => ({

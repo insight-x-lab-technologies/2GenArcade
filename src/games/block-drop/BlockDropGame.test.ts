@@ -80,6 +80,23 @@ describe('BlockDropGame (integration)', () => {
     game.destroy();
   });
 
+  it('holds/swaps a piece on the hold button without throwing', () => {
+    const { ctx, fire } = makeContext();
+    const game = new BlockDropGame();
+    game.init(ctx);
+    expect(() => {
+      fire({ kind: 'button', id: 'hold', phase: 'press' }); // bank the current piece
+      game.render(0);
+      fire({ kind: 'button', id: 'hold', phase: 'press' }); // ignored: once per piece
+      for (let i = 0; i < 30; i += 1) game.update(1 / 60);
+      fire({ kind: 'button', id: 'drop', phase: 'press' }); // lock → hold re-armed
+      game.update(1 / 60);
+      fire({ kind: 'button', id: 'hold', phase: 'press' }); // swap back in
+      game.render(0.5);
+    }).not.toThrow();
+    game.destroy();
+  });
+
   it('reaches game over when the well fills, with numeric score and stats', () => {
     const { ctx, events, fire } = makeContext();
     const game = new BlockDropGame();

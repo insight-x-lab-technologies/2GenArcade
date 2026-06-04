@@ -9,6 +9,9 @@ export const blockDropMeta: GameMeta = {
   scoreType: 'points',
   scoreIsEndless: true,
   controlScheme: 'swipe',
+  actionButtons: [
+    { id: 'hold', labelKey: 'blockDrop:controls.hold', glyph: '⇪', accent: 'violet', mode: 'tap' },
+  ],
   howToPlayKey: 'blockDrop:howToPlay',
   thumbnail: '🟧',
   trophies: [

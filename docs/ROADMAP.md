@@ -118,9 +118,12 @@ espaço), ciclo dia↔noite, 10 power-ups, 30 troféus, score por distância.
 **Estado atual:** snake original, orbs, combos, *Surge* (atravessa a si mesmo a
 2× pontos, auto-disparado), d-pad, 5 troféus, score por pontos.
 
-### C.1. Botão de Dash / Surge manual — `P1` · `S` (depende de A1)
+### C.1. Botão de Dash / Surge manual — `P1` · `S` (depende de A1) — ✅ FEITO (2026-06-04, Descarga manual)
 - Botão de **arrancada curta** (consome combo) para escapar de enrascadas — dá
   skill ceiling. Alternativa: disparar o Surge manualmente em vez de automático.
+- **Implementado:** a Descarga agora é acionada por botão quando carregada
+  (antes auto), permitindo guardar a travessia para quando a Espiral se encurrala.
+  Indicador "DESCARGA PRONTA" pulsa no HUD.
 
 ### C.2. Hazards e variedade de mapa — `P1` · `M`
 - Paredes internas/obstáculos móveis, portais (entra de um lado, sai do outro),
@@ -141,9 +144,12 @@ espaço), ciclo dia↔noite, 10 power-ups, 30 troféus, score por distância.
 terrenos (asfalto/chuva/lama/neve), ciclo de dia, 8 power-ups, 30 troféus,
 score por distância.
 
-### D.1. Nitro manual + drift/esquiva — `P1` · `M` (depende de A1)
+### D.1. Nitro manual + drift/esquiva — `P1` · `M` (depende de A1) — ✅ FEITO (2026-06-04)
 - Botão para **acionar o Nitro** quando o Burn está cheio (em vez de auto) → mais
   controle/estratégia. Botão de **drift/dash lateral** para esquiva rápida.
+- **Implementado:** botão **Nitro** (tap, ignite quando o Burn enche; HUD mostra
+  "NITRO PRONTO") + botão **Esquiva** (tap, arrancada lateral que ignora a
+  aderência — funciona até na chuva/barro/neve — com cooldown). SFX de esquiva.
 
 ### D.2. Tráfego em sentido contrário + obstáculos — `P1` · `M`
 - Faixa de carros vindo na contramão, óleo/poças, rampas/saltos. Aumenta tensão.
@@ -183,10 +189,13 @@ power-ups, ao contrário de River Run/Road Burner).
 **Estado atual:** breakout original, *Blaze* (bola de fogo perfurante 2× pontos,
 auto-ignição), 7 power-ups, 8 troféus, níveis infinitos mais rápidos, pontos.
 
-### F.1. Disparo de Blaze + mira de saque — `P1` · `S` (A1 p/ Blaze)
+### F.1. Disparo de Blaze + mira de saque — `P1` · `S` (A1 p/ Blaze) — ✅ FEITO (2026-06-04)
 - Botão para **disparar o Blaze** no momento ideal (em vez de auto).
 - Linha de mira/preview de ângulo no saque (já existe saque angulado; mostrar a
   trajetória inicial melhora muito o feel).
+- **Implementado:** botão **Bola de fogo** (tap, acende a bola perfurante quando
+  a Chama enche; HUD "CHAMA PRONTA"). Linha de mira tracejada no saque que
+  traça a trajetória (com ricochetes nas paredes) e segue a posição da raquete.
 
 ### F.2. Variedade de bricks — `P1` · `M`
 - Bricks explosivos (dano em cadeia), indestrutíveis, móveis, regenerativos,
@@ -207,9 +216,12 @@ auto-ignição), 7 power-ups, 8 troféus, níveis infinitos mais rápidos, ponto
 **Estado atual:** puzzle de peças caindo com combo *Overdrive*, controle por
 swipe, 5 troféus, pontos infinitos.
 
-### G.1. Ghost piece + hold/next — `P1` · `S`
+### G.1. Ghost piece + hold/next — `P1` · `S` — ✅ FEITO (2026-06-04, hold)
 - Sombra de aterrissagem (ghost) e, se ainda não houver, fila "próxima" + "segurar
   peça". Padrão esperado do gênero; melhora muito a legibilidade no celular.
+- **Implementado:** o **ghost** e o preview "próxima" já existiam; adicionado o
+  **hold/reserva** (botão de ação, 1× por peça, com preview ao lado da "próxima",
+  esmaecido enquanto bloqueado).
 
 ### G.2. Aprofundar o Overdrive — `P1` · `M`
 - Multiplicador de cadeia, shard-bomba ao encher, "all clear" bônus. É a mecânica
@@ -228,11 +240,11 @@ swipe, 5 troféus, pontos infinitos.
 2. A3 (reiniciar no pause) `P1` — barato e muito sentido
 3. A2 (haptics + clique configurável) `P1`
 
-**M2 — Os pedidos do A, jogo a jogo**
-4. B1 (River Run: tiro opcional + míssil) `P0`
-5. E.1/E.2 (Star Defender: tiro/Nova manual, reusa B1) `P1`
-6. D.1 (Road Burner: nitro manual + drift) `P1`
-7. C.1 / F.1 / G.1 (dash, disparo de Blaze, ghost piece) `P1`
+**M2 — Os pedidos do A, jogo a jogo** — ✅ CONCLUÍDO (2026-06-04)
+4. B1 (River Run: tiro opcional + míssil) `P0` — ✅
+5. E.1/E.2 (Star Defender: tiro/Nova manual, reusa B1) `P1` — ✅
+6. D.1 (Road Burner: nitro manual + drift) `P1` — ✅
+7. C.1 / F.1 / G.1 (dash, disparo de Blaze, ghost piece) `P1` — ✅
 
 **M3 — Profundidade de conteúdo**
 8. Chefes/variedade: B2, E.3, F.2, F.3

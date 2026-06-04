@@ -16,6 +16,7 @@ const stubCtx2d = () => {
 function makeContext() {
   const events: Array<{ type: keyof GameEventMap; payload: unknown }> = [];
   const held = new Set<Direction>();
+  const heldButtons = new Set<string>();
   const canvas = { getContext: () => stubCtx2d() } as unknown as HTMLCanvasElement;
 
   const ctx: GameContext = {
@@ -23,7 +24,7 @@ function makeContext() {
     input: {
       subscribe: () => () => undefined,
       isHeld: (d) => held.has(d),
-      isButtonHeld: () => false,
+      isButtonHeld: (id) => heldButtons.has(id),
     },
     audio: { playMusic: vi.fn(), stopMusic: vi.fn(), playSfx: vi.fn() },
     storage: { get: (_k, fb) => fb, set: () => undefined, remove: () => undefined },
@@ -33,7 +34,7 @@ function makeContext() {
     viewport: { width: 360, height: 640 },
   };
 
-  return { ctx, events, held };
+  return { ctx, events, held, heldButtons };
 }
 
 describe('BrickBounceGame (integration)', () => {
@@ -98,6 +99,30 @@ describe('BrickBounceGame (integration)', () => {
     for (const key of ['level', 'bricks', 'blazes', 'levelsCleared', 'powerups']) {
       expect(payload.stats).toHaveProperty(key);
     }
+    game.destroy();
+  });
+
+  it('renders the serve aim line and ignites Blaze on the button without throwing', () => {
+    const { ctx, held, heldButtons } = makeContext();
+    const game = new BrickBounceGame();
+    game.init(ctx);
+    // A ball waits on the paddle → the aim line should draw without throwing.
+    expect(() => game.render(0)).not.toThrow();
+    // Launch, rally a while to charge Blaze, tapping the Blaze button to ignite.
+    held.add('up');
+    game.update(1 / 60);
+    held.delete('up');
+    expect(() => {
+      for (let i = 0; i < 600; i += 1) {
+        held.clear();
+        held.add(i % 60 < 30 ? 'right' : 'left');
+        if (i % 200 === 0) held.add('up'); // re-serve if a ball was lost
+        heldButtons.delete('blaze');
+        if (i % 45 === 0) heldButtons.add('blaze'); // rising-edge ignite attempts
+        game.update(1 / 60);
+        if (i % 7 === 0) game.render((i % 60) / 60);
+      }
+    }).not.toThrow();
     game.destroy();
   });
 

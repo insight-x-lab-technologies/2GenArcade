@@ -79,7 +79,9 @@ export class SnakeCoilGame implements GameModule {
 
   private surgeMeter = 0;
   private surgeActive = false;
+  private surgeReady = false;
   private surgeTimer = 0;
+  private prevSurgeHeld = false;
 
   private interval = tickInterval(1);
   private stepClock = 0;
@@ -112,7 +114,9 @@ export class SnakeCoilGame implements GameModule {
     this.surges = 0;
     this.surgeMeter = 0;
     this.surgeActive = false;
+    this.surgeReady = false;
     this.surgeTimer = 0;
+    this.prevSurgeHeld = false;
     this.interval = tickInterval(1);
     this.stepClock = 0;
     this.gameOver = false;
@@ -146,6 +150,14 @@ export class SnakeCoilGame implements GameModule {
 
   update(dt: number): void {
     if (this.gameOver) return;
+
+    // Dash button (C.1): the Surge is now fired manually once charged, so the
+    // player can save the phase-through window for when the Coil is boxed in.
+    const surgeHeld = this.ctx.input.isButtonHeld('surge');
+    if (surgeHeld && !this.prevSurgeHeld && this.surgeReady && !this.surgeActive) {
+      this.startSurge();
+    }
+    this.prevSurgeHeld = surgeHeld;
 
     if (this.comboTimer > 0) {
       this.comboTimer -= dt;
@@ -230,7 +242,10 @@ export class SnakeCoilGame implements GameModule {
 
     if (!this.surgeActive) {
       this.surgeMeter += SURGE_PER_ORB + (kind === 'prism' ? PRISM_METER_BONUS : 0);
-      if (this.surgeMeter >= 1) this.startSurge();
+      if (this.surgeMeter >= 1) {
+        this.surgeMeter = 1;
+        this.surgeReady = true;
+      }
     }
 
     this.emitScore();
@@ -256,6 +271,7 @@ export class SnakeCoilGame implements GameModule {
 
   private startSurge(): void {
     this.surgeMeter = 0;
+    this.surgeReady = false;
     this.surgeActive = true;
     this.surgeTimer = SURGE_DURATION;
     this.surges += 1;
@@ -364,6 +380,14 @@ export class SnakeCoilGame implements GameModule {
     g.textBaseline = 'middle';
     g.textAlign = 'left';
     g.fillText(`LV ${this.level}`, pad, barY + barH + 12);
+    if (this.surgeReady && !this.surgeActive) {
+      const pulse = this.ctx.reducedMotion ? 1 : 0.6 + 0.4 * Math.sin(performance.now() / 140);
+      g.fillStyle = `rgba(255,210,122,${pulse})`;
+      g.textAlign = 'center';
+      g.fillText(this.ctx.i18n('snakeCoil:hudReady').toUpperCase(), width / 2, barY + barH + 12);
+      g.fillStyle = '#a796c9';
+      g.textAlign = 'left';
+    }
     if (this.combo >= 2) {
       g.fillStyle = this.surgeActive ? '#46d4c4' : '#ff8c42';
       g.textAlign = 'right';

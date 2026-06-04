@@ -10,6 +10,7 @@ import {
   BLAZE_PER_HIT,
   BLAZE_SPEED_BONUS,
   BOLT_SPEED,
+  BRICK_TOP,
   brickCenterX,
   brickCenterY,
   brickHalfH,
@@ -120,6 +121,7 @@ export class BrickBounceGame implements GameModule {
 
   private levelBreak = 0;
   private upPrev = false;
+  private blazePrev = false;
   private wallSfxCd = 0;
 
   // Feedback.
@@ -173,6 +175,7 @@ export class BrickBounceGame implements GameModule {
     this.boltTimer = 0;
     this.levelBreak = 0;
     this.upPrev = false;
+    this.blazePrev = false;
     this.wallSfxCd = 0;
     this.flash = 0;
     this.shake = 0;
@@ -259,6 +262,12 @@ export class BrickBounceGame implements GameModule {
     const up = input.isHeld('up');
     if (up && !this.upPrev) this.launchStuck();
     this.upPrev = up;
+
+    // Blaze is fired manually (F.1): the meter charges, then the player picks
+    // the moment to ignite the piercing, double-score Blaze Ball.
+    const blaze = input.isButtonHeld('blaze');
+    if (blaze && !this.blazePrev) this.igniteBlaze();
+    this.blazePrev = blaze;
 
     if (this.levelBreak > 0) {
       this.levelBreak -= dt;
@@ -447,10 +456,9 @@ export class BrickBounceGame implements GameModule {
       this.ctx.emit.emit('trophy', { trophyId: 'firstBrick' });
     }
     if (Math.random() < DROP_CHANCE) this.dropPowerUp(br.x, br.y);
-    this.maybeIgniteBlaze();
   }
 
-  private maybeIgniteBlaze(): void {
+  private igniteBlaze(): void {
     if (this.blazeTime > 0 || this.blaze < BLAZE_MAX) return;
     this.blazeTime = BLAZE_DURATION;
     this.blazes += 1;
@@ -687,6 +695,7 @@ export class BrickBounceGame implements GameModule {
     const pxLerp = lerp(this.prevPx, this.px, alpha);
     this.drawShield(g, X, Y, s);
     this.drawPaddle(g, X, Y, s, pxLerp);
+    this.drawAimLine(g, X, Y, s);
     this.drawBalls(g, X, Y, s, alpha);
     this.drawHud(g, X, Y, s, offX, offY);
 
@@ -758,6 +767,56 @@ export class BrickBounceGame implements GameModule {
       g.fillRect(X(px - this.paddleHW * 0.8) - s * 0.6, y - s, s * 1.2, s * 1.4);
       g.fillRect(X(px + this.paddleHW * 0.8) - s * 0.6, y - s, s * 1.2, s * 1.4);
     }
+  }
+
+  /** Serve aim preview (F.1): trace where the waiting ball would launch, with a
+   *  couple of wall bounces, so the player can read the angle before serving. */
+  private drawAimLine(
+    g: CanvasRenderingContext2D,
+    X: (x: number) => number,
+    Y: (y: number) => number,
+    s: number,
+  ): void {
+    if (this.gameOver || this.levelBreak > 0) return;
+    const ball = this.balls.find((b) => b.stuck);
+    if (!ball) return;
+
+    // Mirror launchStuck()'s serve angle so the preview matches the real shot.
+    const dirSign = this.px < FIELD_W / 2 ? 1 : -1;
+    const aim = clamp(ball.rel * 0.5 + dirSign * 0.28, -1, 1);
+    const v = paddleBounce(aim, this.ballSpeed(), MAX_BOUNCE);
+    const mag = Math.hypot(v.vx, v.vy) || 1;
+    let dx = v.vx / mag;
+    const dy = v.vy / mag; // serve always heads up; only side walls flip dx
+    let x = ball.x;
+    let y = ball.y;
+
+    const pts: Array<[number, number]> = [[x, y]];
+    const stepLen = 2.4;
+    let bounces = 0;
+    for (let i = 0; i < 90 && bounces < 3; i += 1) {
+      x += dx * stepLen;
+      y += dy * stepLen;
+      if (x < WALL + BALL_R) {
+        x = WALL + BALL_R;
+        dx = Math.abs(dx);
+        bounces += 1;
+      } else if (x > FIELD_W - WALL - BALL_R) {
+        x = FIELD_W - WALL - BALL_R;
+        dx = -Math.abs(dx);
+        bounces += 1;
+      }
+      pts.push([x, y]);
+      if (y <= BRICK_TOP + BALL_R) break; // stop at the brick field
+    }
+
+    g.strokeStyle = 'rgba(255,228,108,0.45)';
+    g.lineWidth = Math.max(1, s * 0.4);
+    g.setLineDash([s * 1.6, s * 1.6]);
+    g.beginPath();
+    pts.forEach(([px, py], i) => (i === 0 ? g.moveTo(X(px), Y(py)) : g.lineTo(X(px), Y(py))));
+    g.stroke();
+    g.setLineDash([]);
   }
 
   private drawShield(
@@ -882,9 +941,11 @@ export class BrickBounceGame implements GameModule {
     g.font = `${Math.round(3 * s)}px monospace`;
     g.textBaseline = 'top';
     g.textAlign = 'left';
-    g.fillStyle = '#a796c9';
-    const label = this.ctx.i18n(this.blazeTime > 0 ? 'brickBounce:hudBlaze' : 'brickBounce:hudCharge');
-    g.fillText(label.toUpperCase(), barX, barY + barH + 1.4 * s);
+    const ready = this.blazeTime <= 0 && this.blaze >= BLAZE_MAX;
+    const labelKey =
+      this.blazeTime > 0 ? 'brickBounce:hudBlaze' : ready ? 'brickBounce:hudReady' : 'brickBounce:hudCharge';
+    g.fillStyle = ready ? '#ffe46c' : '#a796c9';
+    g.fillText(this.ctx.i18n(labelKey).toUpperCase(), barX, barY + barH + 1.4 * s);
 
     // Lives (top-right) + level.
     g.textAlign = 'right';

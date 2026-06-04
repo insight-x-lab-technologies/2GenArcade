@@ -52,6 +52,8 @@ export class BlockDropGame implements GameModule {
   private bag: Shard[] = [];
   private current!: Shard;
   private next!: Shard;
+  private holdPiece: Shard | null = null;
+  private holdUsed = false;
   private offR = 0;
   private offC = 0;
   private fallProgress = 0;
@@ -102,6 +104,8 @@ export class BlockDropGame implements GameModule {
     this.overdriveActive = false;
     this.overdriveTimer = 0;
     this.gameOver = false;
+    this.holdPiece = null;
+    this.holdUsed = false;
     this.next = this.drawFromBag();
     this.spawn();
   }
@@ -120,6 +124,7 @@ export class BlockDropGame implements GameModule {
   private spawn(): void {
     this.current = this.next;
     this.next = this.drawFromBag();
+    this.holdUsed = false; // hold becomes available again for the new piece
     this.offC = spawnColumn(this.current, COLS);
     this.offR = 0;
     this.fallProgress = 0;
@@ -128,6 +133,35 @@ export class BlockDropGame implements GameModule {
     if (collides(this.board, this.current, this.offR, this.offC)) {
       this.endGame();
     }
+  }
+
+  /** A fresh, spawn-orientation copy of a shard by id (for the hold slot). */
+  private canonical(id: string): Shard {
+    const base = SHARDS.find((s) => s.id === id) ?? SHARDS[0]!;
+    return { ...base, cells: base.cells.map(([r, c]) => [r, c] as [number, number]) };
+  }
+
+  /** Shelve the current piece (G.1). Swaps with the held one, or banks it and
+   *  pulls the next. Allowed once per piece so it can't be abused to stall. */
+  private hold(): void {
+    if (this.gameOver || this.holdUsed) return;
+    this.holdUsed = true;
+    const shelved = this.canonical(this.current.id);
+    if (this.holdPiece) {
+      this.current = this.holdPiece;
+      this.holdPiece = shelved;
+    } else {
+      this.holdPiece = shelved;
+      this.current = this.next;
+      this.next = this.drawFromBag();
+    }
+    this.offC = spawnColumn(this.current, COLS);
+    this.offR = 0;
+    this.fallProgress = 0;
+    this.lockTimer = 0;
+    this.lockResets = 0;
+    this.ctx.audio.playSfx('rotate');
+    if (collides(this.board, this.current, this.offR, this.offC)) this.endGame();
   }
 
   // ---- Input ----------------------------------------------------------------
@@ -158,6 +192,7 @@ export class BlockDropGame implements GameModule {
         if (e.phase === 'press') {
           if (e.id === 'rotate' || e.id === 'action') this.rotate();
           else if (e.id === 'drop') this.hardDrop();
+          else if (e.id === 'hold') this.hold();
         }
         break;
     }
@@ -416,8 +451,8 @@ export class BlockDropGame implements GameModule {
 
   private drawTopStrip(g: CanvasRenderingContext2D, width: number, h: number, cell: number): void {
     const pad = 10;
-    // Overdrive meter.
-    const barW = width - pad * 2 - 64;
+    // Overdrive meter (leaves room on the right for the hold + next previews).
+    const barW = width - pad * 2 - 96;
     const barH = 10;
     const barY = 10;
     g.fillStyle = '#241640';
@@ -433,13 +468,22 @@ export class BlockDropGame implements GameModule {
     g.textBaseline = 'middle';
     g.fillText(`LV ${this.level}  ·  ${this.lines}`, pad, barY + barH + 12);
 
-    // Next piece mini-preview at top-right.
+    // Next piece mini-preview at top-right, with the held piece to its left.
     const previewSize = Math.min(8, cell - 2);
-    const w = shardWidth(this.next);
-    const px = width - pad - w * previewSize;
     const py = 8;
+    const wN = shardWidth(this.next);
+    const nx = width - pad - wN * previewSize;
     for (const [r, c] of this.next.cells) {
-      this.drawCell(g, px + c * previewSize, py + r * previewSize, previewSize, this.next.color, 0.85);
+      this.drawCell(g, nx + c * previewSize, py + r * previewSize, previewSize, this.next.color, 0.85);
+    }
+    if (this.holdPiece) {
+      const wH = shardWidth(this.holdPiece);
+      const hx = nx - 10 - wH * previewSize;
+      // Dimmed while it can't be swapped again until the current piece locks.
+      const a = this.holdUsed ? 0.3 : 0.7;
+      for (const [r, c] of this.holdPiece.cells) {
+        this.drawCell(g, hx + c * previewSize, py + r * previewSize, previewSize, this.holdPiece.color, a);
+      }
     }
     void h;
   }

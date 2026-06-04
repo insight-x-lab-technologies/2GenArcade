@@ -63,6 +63,10 @@ export const roadBurnerMeta: GameMeta = {
   scoreType: 'distance',
   scoreIsEndless: true,
   controlScheme: 'dpad',
+  actionButtons: [
+    { id: 'nitro', labelKey: 'roadBurner:controls.nitro', glyph: '⚡', accent: 'amber', mode: 'tap' },
+    { id: 'dash', labelKey: 'roadBurner:controls.dash', glyph: '⇄', accent: 'violet', mode: 'tap' },
+  ],
   howToPlayKey: 'roadBurner:howToPlay',
   thumbnail: '🏎️',
   trophies,

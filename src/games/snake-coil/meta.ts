@@ -9,6 +9,9 @@ export const snakeCoilMeta: GameMeta = {
   scoreType: 'points',
   scoreIsEndless: true,
   controlScheme: 'dpad',
+  actionButtons: [
+    { id: 'surge', labelKey: 'snakeCoil:controls.surge', glyph: '⚡', accent: 'violet', mode: 'tap' },
+  ],
   howToPlayKey: 'snakeCoil:howToPlay',
   thumbnail: '🐍',
   trophies: [
