@@ -65,14 +65,8 @@ try {
   await sleep(700);
   log('canvas mounted');
 
-  // Fly for a moment: steer right then left, boost a bit (auto-fire is on).
-  await page.keyboard.down('ArrowRight');
-  await sleep(450);
-  await page.keyboard.up('ArrowRight');
-  await page.keyboard.down('ArrowUp'); // boost
-  await sleep(500);
-  await page.keyboard.up('ArrowUp');
-
+  // Check the canvas paints first (a gentle nudge, before any risky maneuver —
+  // firing is manual now, so the ship dies faster if we push it).
   const painted = await page.evaluate(() => {
     const c = document.querySelector('canvas');
     if (!c) return false;
@@ -90,6 +84,15 @@ try {
 
   await page.screenshot({ path: 'scripts/smoke-river.png' });
   log('screenshot saved');
+
+  // Exercise the new manual weapons — hold fire (KeyJ) and tap a missile (KeyK).
+  await page.keyboard.down('KeyJ'); // hold fire
+  await page.keyboard.down('ArrowRight');
+  await sleep(350);
+  await page.keyboard.up('ArrowRight');
+  await page.keyboard.press('KeyK'); // launch a missile
+  await sleep(250);
+  await page.keyboard.up('KeyJ');
 
   // Steer hard into the wall to confirm crash → game over.
   await page.keyboard.down('ArrowLeft');

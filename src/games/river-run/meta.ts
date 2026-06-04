@@ -24,6 +24,9 @@ const TROPHIES: Array<[string, string, TrophyCondition]> = [
   ['afterburner', '⚡', (c) => stat('boosts')(c) >= 1],
   ['topUp', '⛽', (c) => stat('fuel')(c) >= 1],
   ['collector', '🎁', (c) => stat('powerups')(c) >= 1],
+  // Missiles (secondary weapon).
+  ['warmonger', '🚀', (c) => stat('missiles')(c) >= 1],
+  ['demolitionist', '💥', (c) => stat('missileKills')(c) >= 8],
   // Power-up first uses (10).
   ['ironclad', '🛡️', (c) => stat('usedShield')(c) >= 1],
   ['lightspeed', '🚀', (c) => stat('usedSuperSpeed')(c) >= 1],
@@ -62,6 +65,10 @@ export const riverRunMeta: GameMeta = {
   scoreType: 'distance',
   scoreIsEndless: true,
   controlScheme: 'dpad',
+  actionButtons: [
+    { id: 'fire', labelKey: 'riverRun:controls.fire', glyph: '⦿', accent: 'amber', mode: 'hold' },
+    { id: 'missile', labelKey: 'riverRun:controls.missile', glyph: '🚀', accent: 'coral', mode: 'tap' },
+  ],
   howToPlayKey: 'riverRun:howToPlay',
   thumbnail: '🛩️',
   trophies,

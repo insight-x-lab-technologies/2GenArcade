@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
+  ActionButtonDef,
   GameContext,
   GameEventEmitter,
   GameEventMap,
@@ -13,7 +14,7 @@ import { CanvasManager, diffHeld, FixedTimestepLoop, PointerInputAdapter } from 
 import { GameAudioBus, getAudioEngine } from '@/audio';
 import { getLocalStore, getTrophyService } from '@/lib';
 import i18nInstance from '@/i18n';
-import { ArcadeButton, SwipeOverlay, VirtualDpad, ZonePad } from '@/ui';
+import { ActionButtons, ArcadeButton, SwipeOverlay, VirtualDpad, ZonePad } from '@/ui';
 import type { CatalogGame } from '@/data/catalog';
 import { useArcadeStore } from './store';
 
@@ -52,6 +53,8 @@ export function GameHost({ game, onExit }: GameHostProps) {
   const [paused, setPaused] = useState(false);
   const [hudScore, setHudScore] = useState(0);
   const [controlScheme, setControlScheme] = useState<ControlScheme>('swipe');
+  const [actionButtons, setActionButtons] = useState<ActionButtonDef[]>([]);
+  const actionButtonsRef = useRef<ActionButtonDef[]>([]);
 
   const controlStyle = useArcadeStore((s) => s.settings.controlStyle);
   const reducedMotion = useArcadeStore((s) => s.reducedMotion);
@@ -92,6 +95,9 @@ export function GameHost({ game, onExit }: GameHostProps) {
       const factory = await game.load!();
       if (cancelled) return;
       setControlScheme(factory.meta.controlScheme);
+      const buttons = factory.meta.actionButtons ?? [];
+      actionButtonsRef.current = buttons;
+      setActionButtons(buttons);
 
       const initialStorage =
         (await getLocalStore().kvGet<Record<string, unknown>>(`gameStorage:${game.id}`)) ?? {};
@@ -167,6 +173,32 @@ export function GameHost({ game, onExit }: GameHostProps) {
 
     void setup();
 
+    // Desktop keyboard shortcuts for game-declared action buttons (also lets the
+    // headless smoke tests drive fire/missile). Maps the Nth declared button to a
+    // fixed key pair; arrows + Space stay owned by the input adapter itself.
+    const ACTION_KEYS = [
+      ['KeyJ', 'KeyZ'],
+      ['KeyK', 'KeyX'],
+      ['KeyL', 'KeyC'],
+    ];
+    const buttonForCode = (code: string): string | null => {
+      const idx = ACTION_KEYS.findIndex((codes) => codes.includes(code));
+      return idx >= 0 ? (actionButtonsRef.current[idx]?.id ?? null) : null;
+    };
+    const onActionKeyDown = (e: KeyboardEvent) => {
+      const id = buttonForCode(e.code);
+      if (!id) return;
+      e.preventDefault();
+      if (!e.repeat) adapterRef.current?.dispatch({ kind: 'button', id, phase: 'press' });
+    };
+    const onActionKeyUp = (e: KeyboardEvent) => {
+      const id = buttonForCode(e.code);
+      if (!id) return;
+      adapterRef.current?.dispatch({ kind: 'button', id, phase: 'release' });
+    };
+    window.addEventListener('keydown', onActionKeyDown);
+    window.addEventListener('keyup', onActionKeyUp);
+
     const onVisibility = () => {
       if (document.hidden) doPause();
     };
@@ -174,6 +206,8 @@ export function GameHost({ game, onExit }: GameHostProps) {
 
     return () => {
       cancelled = true;
+      window.removeEventListener('keydown', onActionKeyDown);
+      window.removeEventListener('keyup', onActionKeyUp);
       document.removeEventListener('visibilitychange', onVisibility);
       resizeObserver.disconnect();
       loopRef.current?.stop();
@@ -252,6 +286,10 @@ export function GameHost({ game, onExit }: GameHostProps) {
         {/* Floating-joystick style draws directly on the play surface. */}
         {useSwipe && !paused && !loading && (
           <SwipeOverlay onChange={setHeld} label={t('controlSwipeArea')} />
+        )}
+        {/* Game-declared action buttons float above every control style. */}
+        {!paused && !loading && (
+          <ActionButtons buttons={actionButtons} label={(k) => t(k)} onButton={dispatchBtn} />
         )}
       </div>
 

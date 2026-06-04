@@ -31,6 +31,7 @@ function makeContext() {
         };
       },
       isHeld: () => false,
+      isButtonHeld: () => false,
     },
     audio: { playMusic: vi.fn(), stopMusic: vi.fn(), playSfx: vi.fn() },
     storage: {

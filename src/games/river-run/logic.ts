@@ -191,7 +191,10 @@ export type PowerKind =
   | 'magnet'
   | 'slowmo'
   | 'scoreX2'
-  | 'regen';
+  | 'regen'
+  // Instant pickup (not a timed buff): refills missile ammo. Spawned through its
+  // own channel, so it stays OUT of POWER_KINDS / the random buff pool.
+  | 'warhead';
 
 export interface PowerSpec {
   kind: PowerKind;
@@ -212,6 +215,7 @@ export const POWERS: Record<PowerKind, PowerSpec> = {
   slowmo: { kind: 'slowmo', duration: 5, color: '#5ec8d8', letter: 'L', trophyId: 'bulletTime' },
   scoreX2: { kind: 'scoreX2', duration: 9, color: '#ffe06a', letter: 'X', trophyId: 'jackpot' },
   regen: { kind: 'regen', duration: 7, color: '#46d49a', letter: 'F', trophyId: 'recycler' },
+  warhead: { kind: 'warhead', duration: 0, color: '#ff9d5d', letter: 'W', trophyId: 'warmonger' },
 };
 
 export const POWER_KINDS: PowerKind[] = [

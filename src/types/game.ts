@@ -7,6 +7,28 @@ import type { TrophyDef } from './trophy';
 export type ControlScheme = 'swipe' | 'dpad' | 'tilt' | 'tap';
 export type Orientation = 'portrait';
 
+/** How an on-screen action button reports to the game. `tap` fires a one-shot
+ *  press/release event (poll via `subscribe`); `hold` stays pressed while the
+ *  finger is down (poll via `input.isButtonHeld(id)`). */
+export type ActionButtonMode = 'tap' | 'hold';
+
+/** A game-declared on-screen action button (fire, missile, nitro, dash, …).
+ *  The shell renders these next to the movement controls for every control
+ *  style, with ≥56px touch targets, and feeds presses into the input adapter
+ *  as `{ kind: 'button', id }` events. Purely declarative: games never render
+ *  their own DOM controls. */
+export interface ActionButtonDef {
+  /** Stable id the game polls/subscribes for, e.g. 'fire' or 'missile'. */
+  id: string;
+  /** i18n key for the accessible label. */
+  labelKey: string;
+  /** Glyph drawn on the button face. */
+  glyph: string;
+  accent?: 'amber' | 'violet' | 'coral';
+  /** Defaults to 'tap'. */
+  mode?: ActionButtonMode;
+}
+
 export interface GameMeta {
   /** Stable slug, e.g. 'block-drop'. */
   id: string;
@@ -19,6 +41,9 @@ export interface GameMeta {
   /** Endless ("sem fim") games. */
   scoreIsEndless: boolean;
   controlScheme: ControlScheme;
+  /** Optional on-screen action buttons (fire, missile, dash…). Rendered by the
+   *  shell for all control styles; omit for movement-only games. */
+  actionButtons?: ActionButtonDef[];
   trophies: TrophyDef[];
   /** Preview art. May be an emoji/glyph for procedurally-drawn thumbnails. */
   thumbnail: string;

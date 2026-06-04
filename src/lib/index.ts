@@ -26,3 +26,9 @@ export {
   type PurchaseResult,
 } from './entitlements';
 export { TrophyService, getTrophyService } from './trophies';
+export {
+  setHapticsEnabled,
+  hapticsSupported,
+  vibrate,
+  type HapticPattern,
+} from './haptics';

@@ -8,5 +8,6 @@ export { TrophyBadge } from './TrophyBadge';
 export { StatusHeader } from './StatusHeader';
 export { Toast } from './Toast';
 export { VirtualDpad } from './VirtualDpad';
+export { ActionButtons } from './ActionButtons';
 export { ZonePad } from './ZonePad';
 export { SwipeOverlay } from './SwipeOverlay';

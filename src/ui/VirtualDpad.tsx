@@ -1,5 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Direction } from '@/types';
+import { vibrate } from '@/lib';
 import { cn } from './cn';
 
 interface VirtualDpadProps {
@@ -17,6 +18,7 @@ export function VirtualDpad({ onDirection, onButton, labels, layout = 'tetris' }
   const dir = (direction: Direction) => ({
     onPointerDown: (e: ReactPointerEvent) => {
       e.preventDefault();
+      vibrate('tap');
       onDirection(direction, 'press');
     },
     onPointerUp: (e: ReactPointerEvent) => {
@@ -30,6 +32,7 @@ export function VirtualDpad({ onDirection, onButton, labels, layout = 'tetris' }
   const btn = (id: string) => ({
     onPointerDown: (e: ReactPointerEvent) => {
       e.preventDefault();
+      vibrate('press');
       onButton(id, 'press');
     },
     onPointerUp: (e: ReactPointerEvent) => {

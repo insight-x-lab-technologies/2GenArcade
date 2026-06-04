@@ -15,6 +15,8 @@ export type { Pack, Entitlement } from './packs';
 export type {
   ControlScheme,
   Orientation,
+  ActionButtonMode,
+  ActionButtonDef,
   GameMeta,
   GameStorage,
   GameEventMap,

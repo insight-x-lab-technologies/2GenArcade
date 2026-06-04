@@ -109,6 +109,29 @@ const sfx: Record<string, SfxDef> = {
       { note: 'E6', dur: '8n', time: 0.1 },
     ],
   },
+  missile: {
+    wave: 'sawtooth',
+    volumeDb: -14,
+    notes: [
+      { note: 'E4', dur: '16n', time: 0 },
+      { note: 'B4', dur: '16n', time: 0.05 },
+      { note: 'E5', dur: '16n', time: 0.1 },
+    ],
+  },
+  missileBoom: {
+    wave: 'noise',
+    volumeDb: -6,
+    notes: [
+      { note: 'E2', dur: '16n', time: 0 },
+      { note: 'C2', dur: '8n', time: 0.05 },
+      { note: 'G1', dur: '4n', time: 0.13 },
+    ],
+  },
+  empty: {
+    wave: 'square',
+    volumeDb: -26,
+    notes: [{ note: 'E3', dur: '32n' }],
+  },
   enemyShoot: {
     wave: 'square',
     volumeDb: -24,

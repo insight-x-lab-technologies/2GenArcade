@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import { vibrate } from '@/lib';
 import { cn } from './cn';
 
 type Variant = 'primary' | 'outline' | 'ghost';
@@ -35,8 +36,13 @@ export function ArcadeButton({
   block = false,
   className,
   children,
+  onPointerDown,
   ...rest
 }: ArcadeButtonProps) {
+  const handlePointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!rest.disabled) vibrate('press');
+    onPointerDown?.(e);
+  };
   const base =
     'inline-flex items-center justify-center gap-2 min-h-[48px] px-5 py-3 rounded-arcade ' +
     'font-mono text-sm font-semibold uppercase tracking-[0.08em] select-none ' +
@@ -52,7 +58,11 @@ export function ArcadeButton({
         : cn('border border-transparent bg-transparent hover:bg-white/5', ACCENT_TEXT[accent]);
 
   return (
-    <button className={cn(base, look, block && 'w-full', className)} {...rest}>
+    <button
+      className={cn(base, look, block && 'w-full', className)}
+      onPointerDown={handlePointerDown}
+      {...rest}
+    >
       {children}
     </button>
   );

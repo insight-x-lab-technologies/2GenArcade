@@ -75,6 +75,9 @@ export const en: AppResources = {
     settingsMusic: 'Music',
     settingsSfx: 'Sound FX',
     settingsCrt: 'CRT effect',
+    settingsHaptics: 'Vibration',
+    settingsHapticsHint: 'Haptic feedback when you tap controls and buttons.',
+    settingsHapticsUnsupported: 'Your device has no vibration — this option has no effect.',
     settingsControl: 'Controls',
     settingsControl_dpad: 'Buttons (d-pad)',
     settingsControl_dpad_hint: 'The classic four-arrow cross.',
@@ -196,8 +199,12 @@ export const en: AppResources = {
     hudFuel: 'Fuel',
     hudDistance: 'Distance',
     hudBoost: 'Boost',
+    controls: {
+      fire: 'Fire (hold)',
+      missile: 'Missile',
+    },
     howToPlay:
-      'Use the d-pad (or arrow keys) to weave through the canyon: left/right steer, hold up to boost and down to brake. Fire is automatic. Destroy ships of all sizes (big ones soak more hits and score more; some shoot back later on). Fly over fuel tanks to refuel — but careful: they are destructible and your own fire can pop them. Grab power-ups for temporary edges. The scenery changes (city, forest, mountains, ocean, space) and day turns to afternoon and night. Running out of fuel, hitting the walls, or getting shot ends the flight.',
+      'Use the d-pad (or arrow keys) to weave through the canyon: left/right steer, hold up to boost and down to brake. Hold the fire button to shoot (it is no longer automatic). The missile button launches a warhead that blasts an area and hits far harder — but you only carry a few: they recharge slowly and the "W" warhead pickup tops them up. Destroy ships of all sizes (big ones soak more hits and score more; some shoot back later on). Fly over fuel tanks to refuel — but careful: they are destructible and your own fire can pop them. Grab power-ups for temporary edges. The scenery changes (city, forest, mountains, ocean, space) and day turns to afternoon and night. Running out of fuel, hitting the walls, or getting shot ends the flight.',
     biomes: {
       city: 'City',
       forest: 'Forest',
@@ -221,6 +228,7 @@ export const en: AppResources = {
       slowmo: 'Slow-mo',
       scoreX2: 'Score x2',
       regen: 'Fuel Regen',
+      warhead: 'Warhead (+2 missiles)',
     },
     trophies: {
       firstKill: { name: 'First kill', description: 'Destroy your first ship.' },
@@ -237,6 +245,8 @@ export const en: AppResources = {
       afterburner: { name: 'Afterburner', description: 'Trigger boost once.' },
       topUp: { name: 'Topped up', description: 'Use a fuel tank.' },
       collector: { name: 'Collector', description: 'Grab a power-up.' },
+      warmonger: { name: 'Warmonger', description: 'Launch your first missile.' },
+      demolitionist: { name: 'Demolitionist', description: 'Destroy 8 ships with missiles in one run.' },
       ironclad: { name: 'Ironclad', description: 'Use Invincibility.' },
       lightspeed: { name: 'Lightspeed', description: 'Use Super Speed.' },
       twinGuns: { name: 'Twin guns', description: 'Use Double Shot.' },

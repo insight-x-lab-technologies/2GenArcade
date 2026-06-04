@@ -73,6 +73,9 @@ export const ptBR = {
     settingsMusic: 'Música',
     settingsSfx: 'Efeitos',
     settingsCrt: 'Efeito CRT',
+    settingsHaptics: 'Vibração',
+    settingsHapticsHint: 'Vibração tátil ao tocar nos controles e botões.',
+    settingsHapticsUnsupported: 'Seu aparelho não oferece vibração — esta opção não terá efeito.',
     settingsControl: 'Controle',
     settingsControl_dpad: 'Botões (direcional)',
     settingsControl_dpad_hint: 'A cruz clássica de quatro setas.',
@@ -194,8 +197,12 @@ export const ptBR = {
     hudFuel: 'Combustível',
     hudDistance: 'Distância',
     hudBoost: 'Turbo',
+    controls: {
+      fire: 'Atirar (segure)',
+      missile: 'Míssil',
+    },
     howToPlay:
-      'Use o direcional (ou as setas) para desviar pelo cânion: esquerda/direita pilotam, segure cima para o turbo e baixo para frear. O tiro é automático. Destrua naves de vários tamanhos (as grandes aguentam mais tiros e valem mais; algumas atiram em você mais adiante). Voe por cima dos tanques de combustível para reabastecer — mas cuidado: eles são destrutíveis e seu tiro pode estourá-los. Pegue power-ups para vantagens temporárias. O cenário muda (cidade, floresta, montanhas, oceano, espaço) e o dia vira tarde e noite. Ficar sem combustível, bater nas paredes ou ser atingido encerra o voo.',
+      'Use o direcional (ou as setas) para desviar pelo cânion: esquerda/direita pilotam, segure cima para o turbo e baixo para frear. Segure o botão de tiro para disparar (não é mais automático). O botão de míssil lança uma ogiva que explode em área e é bem mais forte — mas você tem poucos: eles se recarregam devagar e a ogiva "W" reabastece. Destrua naves de vários tamanhos (as grandes aguentam mais tiros e valem mais; algumas atiram em você mais adiante). Voe por cima dos tanques de combustível para reabastecer — mas cuidado: eles são destrutíveis e seu tiro pode estourá-los. Pegue power-ups para vantagens temporárias. O cenário muda (cidade, floresta, montanhas, oceano, espaço) e o dia vira tarde e noite. Ficar sem combustível, bater nas paredes ou ser atingido encerra o voo.',
     biomes: {
       city: 'Cidade',
       forest: 'Floresta',
@@ -219,6 +226,7 @@ export const ptBR = {
       slowmo: 'Câmera Lenta',
       scoreX2: 'Pontos x2',
       regen: 'Regenerar Combustível',
+      warhead: 'Ogiva (+2 mísseis)',
     },
     trophies: {
       firstKill: { name: 'Primeiro abate', description: 'Destrua sua primeira nave.' },
@@ -235,6 +243,8 @@ export const ptBR = {
       afterburner: { name: 'Pós-combustão', description: 'Ative o turbo uma vez.' },
       topUp: { name: 'Reabastecido', description: 'Use um tanque de combustível.' },
       collector: { name: 'Colecionador', description: 'Pegue um power-up.' },
+      warmonger: { name: 'Belicista', description: 'Lance seu primeiro míssil.' },
+      demolitionist: { name: 'Demolidor', description: 'Destrua 8 naves com mísseis em uma partida.' },
       ironclad: { name: 'Couraçado', description: 'Use a Invencibilidade.' },
       lightspeed: { name: 'Velocidade da luz', description: 'Use a Super Velocidade.' },
       twinGuns: { name: 'Canhões gêmeos', description: 'Use o Tiro Duplo.' },

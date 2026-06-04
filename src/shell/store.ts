@@ -7,6 +7,7 @@ import {
   getLocalStore,
   getTrophyService,
   isSupabaseConfigured,
+  setHapticsEnabled,
 } from '@/lib';
 import { FREE_PACK_IDS, getPackForGame } from '@/data/packs';
 import { setAppLanguage, type AppLanguage } from '@/i18n';
@@ -54,6 +55,7 @@ interface Settings {
   musicVolume: number;
   sfxVolume: number;
   crtEnabled: boolean;
+  haptics: boolean;
   language: AppLanguage;
   controlStyle: ControlStyle;
 }
@@ -62,6 +64,7 @@ const DEFAULT_SETTINGS: Settings = {
   musicVolume: 0.6,
   sfxVolume: 0.8,
   crtEnabled: true,
+  haptics: true,
   language: 'pt-BR',
   controlStyle: 'dpad',
 };
@@ -94,6 +97,7 @@ interface ArcadeState {
   setMusicVolume(v: number): void;
   setSfxVolume(v: number): void;
   toggleCrt(): void;
+  toggleHaptics(): void;
   setLanguage(lang: AppLanguage): void;
   setControlStyle(style: ControlStyle): void;
   setNickname(name: string): void;
@@ -143,6 +147,7 @@ export const useArcadeStore = create<ArcadeState>((set, get) => ({
     const engine = getAudioEngine();
     engine.setMusicVolume(settings.musicVolume);
     engine.setSfxVolume(settings.sfxVolume);
+    setHapticsEnabled(settings.haptics);
     setAppLanguage(settings.language);
 
     set({
@@ -193,6 +198,14 @@ export const useArcadeStore = create<ArcadeState>((set, get) => ({
 
   toggleCrt() {
     const settings = { ...get().settings, crtEnabled: !get().settings.crtEnabled };
+    set({ settings });
+    void getLocalStore().kvSet(SETTINGS_KEY, settings);
+  },
+
+  toggleHaptics() {
+    const haptics = !get().settings.haptics;
+    setHapticsEnabled(haptics);
+    const settings = { ...get().settings, haptics };
     set({ settings });
     void getLocalStore().kvSet(SETTINGS_KEY, settings);
   },

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Toggle, VolumeSlider, cn } from '@/ui';
+import { hapticsSupported } from '@/lib';
 import { SUPPORTED_LANGUAGES, type AppLanguage } from '@/i18n';
 import { APP_VERSION } from '../constants';
 import { ScreenShell } from '../ScreenShell';
@@ -25,6 +26,7 @@ export function SettingsScreen() {
   const setMusicVolume = useArcadeStore((s) => s.setMusicVolume);
   const setSfxVolume = useArcadeStore((s) => s.setSfxVolume);
   const toggleCrt = useArcadeStore((s) => s.toggleCrt);
+  const toggleHaptics = useArcadeStore((s) => s.toggleHaptics);
   const setLanguage = useArcadeStore((s) => s.setLanguage);
   const setControlStyle = useArcadeStore((s) => s.setControlStyle);
   const setNickname = useArcadeStore((s) => s.setNickname);
@@ -118,6 +120,21 @@ export function SettingsScreen() {
               icon="🔊"
             />
           </div>
+        </Section>
+
+        {/* Haptics */}
+        <Section title={t('settingsHaptics')}>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-sm text-muted">{t('settingsHaptics')}</span>
+            <Toggle
+              checked={settings.haptics}
+              onChange={toggleHaptics}
+              label={t('settingsHaptics')}
+            />
+          </div>
+          <p className="mt-2 font-mono text-[10px] text-muted/70">
+            {hapticsSupported() ? t('settingsHapticsHint') : t('settingsHapticsUnsupported')}
+          </p>
         </Section>
 
         {/* CRT */}

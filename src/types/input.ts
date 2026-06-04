@@ -13,8 +13,10 @@ export type InputEvent =
 export type InputHandler = (event: InputEvent) => void;
 
 /** Subscriptions return an unsubscribe function. `isHeld` lets the game poll a
- *  direction each fixed step (e.g. for continuous soft-drop). */
+ *  direction each fixed step (e.g. for continuous soft-drop); `isButtonHeld`
+ *  does the same for named action buttons (e.g. hold-to-fire). */
 export interface InputAdapter {
   subscribe(handler: InputHandler): () => void;
   isHeld(direction: Direction): boolean;
+  isButtonHeld(id: string): boolean;
 }

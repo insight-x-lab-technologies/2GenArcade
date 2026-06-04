@@ -24,6 +24,7 @@ function makeContext() {
     input: {
       subscribe: () => () => undefined,
       isHeld: (d) => held.has(d),
+      isButtonHeld: () => false,
     },
     audio: { playMusic: vi.fn(), stopMusic: vi.fn(), playSfx: vi.fn() },
     storage: { get: (_k, fb) => fb, set: () => undefined, remove: () => undefined },

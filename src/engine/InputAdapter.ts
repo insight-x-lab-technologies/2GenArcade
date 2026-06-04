@@ -19,6 +19,7 @@ export interface PointerInputOptions extends Partial<GestureOptions> {
 export class PointerInputAdapter implements InputAdapter {
   private readonly handlers = new Set<InputHandler>();
   private readonly held = new Set<Direction>();
+  private readonly heldButtons = new Set<string>();
   private readonly gestureOptions: GestureOptions;
   private readonly holdThreshold: number;
 
@@ -49,11 +50,18 @@ export class PointerInputAdapter implements InputAdapter {
     return this.held.has(direction);
   }
 
+  isButtonHeld(id: string): boolean {
+    return this.heldButtons.has(id);
+  }
+
   /** Inject an event from on-screen controls (or tests). */
   dispatch(event: InputEvent): void {
     if (event.kind === 'dpad') {
       if (event.phase === 'press') this.held.add(event.direction);
       else this.held.delete(event.direction);
+    } else if (event.kind === 'button') {
+      if (event.phase === 'press') this.heldButtons.add(event.id);
+      else this.heldButtons.delete(event.id);
     }
     this.emit(event);
   }
@@ -85,6 +93,7 @@ export class PointerInputAdapter implements InputAdapter {
     this.detach();
     this.handlers.clear();
     this.held.clear();
+    this.heldButtons.clear();
   }
 
   private emit(event: InputEvent): void {
@@ -139,7 +148,10 @@ export class PointerInputAdapter implements InputAdapter {
       return;
     }
     if (e.key === ' ' || e.key === 'Enter') {
-      if (!e.repeat) this.emit({ kind: 'button', id: 'action', phase: 'press' });
+      if (!e.repeat) {
+        this.heldButtons.add('action');
+        this.emit({ kind: 'button', id: 'action', phase: 'press' });
+      }
       e.preventDefault();
     }
   };
@@ -152,6 +164,7 @@ export class PointerInputAdapter implements InputAdapter {
       return;
     }
     if (e.key === ' ' || e.key === 'Enter') {
+      this.heldButtons.delete('action');
       this.emit({ kind: 'button', id: 'action', phase: 'release' });
     }
   };

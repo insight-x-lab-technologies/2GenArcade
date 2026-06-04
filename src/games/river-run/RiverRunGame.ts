@@ -48,6 +48,16 @@ const ENEMY_EXTRA = 12;
 const STAR_COUNT = 52;
 const SPREAD_VX = 42;
 
+// Missile (secondary weapon): slower than bullets, limited ammo, area blast.
+const MISSILE_SPEED = 116;
+const MISSILE_START = 3;
+const MISSILE_MAX = 6;
+const MISSILE_REGEN = 11; // seconds to passively regain one missile
+const MISSILE_BLAST_R = 16; // area-of-effect radius (field units)
+const MISSILE_DAMAGE = 5; // damage to every ship caught in the blast
+const MISSILE_COOLDOWN = 0.18; // min seconds between launches
+const MISSILE_DETONATE_Y = 14; // detonate near the top if it hits nothing
+
 interface Bullet {
   x: number;
   y: number;
@@ -56,6 +66,12 @@ interface Bullet {
   vx: number;
   pierce: boolean;
   hit: Set<number> | null;
+}
+interface Missile {
+  x: number;
+  y: number;
+  prevX: number;
+  prevY: number;
 }
 interface EnemyBullet {
   x: number;
@@ -137,6 +153,7 @@ const POWER_TROPHY: Record<PowerKind, string> = {
   slowmo: 'bulletTime',
   scoreX2: 'jackpot',
   regen: 'recycler',
+  warhead: 'warmonger',
 };
 const BIOME_TROPHY: Record<BiomeId, string> = {
   city: 'cityRunner',
@@ -179,6 +196,7 @@ export class RiverRunGame implements GameModule {
   private fuel = FUEL_MAX;
 
   private bullets: Bullet[] = [];
+  private missiles: Missile[] = [];
   private enemies: Enemy[] = [];
   private enemyBullets: EnemyBullet[] = [];
   private tanks: Tank[] = [];
@@ -188,9 +206,15 @@ export class RiverRunGame implements GameModule {
   private nextId = 1;
 
   private fireTimer = 0;
+  private missileAmmo = MISSILE_START;
+  private missileRegenTimer = 0;
+  private missileCd = 0;
+  private prevMissileHeld = false;
+  private shake = 0;
   private enemyTimer = 1;
   private tankTimer = 4;
   private powerTimer = 6;
+  private warheadTimer = 16;
 
   private fx: Record<PowerKind, number> = this.zeroFx();
 
@@ -200,6 +224,8 @@ export class RiverRunGame implements GameModule {
   private bigKills = 0;
   private fuelTanks = 0;
   private boosts = 0;
+  private missilesFired = 0;
+  private missileKills = 0;
   private powerupsCollected = 0;
   private usedKinds = new Set<PowerKind>();
   private biomesSeen = new Set<BiomeId>();
@@ -233,6 +259,7 @@ export class RiverRunGame implements GameModule {
       slowmo: 0,
       scoreX2: 0,
       regen: 0,
+      warhead: 0,
     };
   }
 
@@ -253,6 +280,7 @@ export class RiverRunGame implements GameModule {
     this.prevDistance = 0;
     this.fuel = FUEL_MAX;
     this.bullets = [];
+    this.missiles = [];
     this.enemies = [];
     this.enemyBullets = [];
     this.tanks = [];
@@ -260,9 +288,15 @@ export class RiverRunGame implements GameModule {
     this.particles = [];
     this.nextId = 1;
     this.fireTimer = 0;
+    this.missileAmmo = MISSILE_START;
+    this.missileRegenTimer = 0;
+    this.missileCd = 0;
+    this.prevMissileHeld = false;
+    this.shake = 0;
     this.enemyTimer = 1;
     this.tankTimer = 4;
     this.powerTimer = 6;
+    this.warheadTimer = 16;
     this.fx = this.zeroFx();
     this.score = 0;
     this.bonus = 0;
@@ -270,6 +304,8 @@ export class RiverRunGame implements GameModule {
     this.bigKills = 0;
     this.fuelTanks = 0;
     this.boosts = 0;
+    this.missilesFired = 0;
+    this.missileKills = 0;
     this.powerupsCollected = 0;
     this.usedKinds = new Set();
     this.biomesSeen = new Set();
@@ -317,6 +353,10 @@ export class RiverRunGame implements GameModule {
     for (const b of this.bullets) {
       b.prevX = b.x;
       b.prevY = b.y;
+    }
+    for (const m of this.missiles) {
+      m.prevX = m.x;
+      m.prevY = m.y;
     }
     for (const e of this.enemies) e.prevY = e.y;
     for (const eb of this.enemyBullets) {
@@ -370,7 +410,7 @@ export class RiverRunGame implements GameModule {
     const dir = (input.isHeld('right') ? 1 : 0) - (input.isHeld('left') ? 1 : 0);
     this.px = clamp(this.px + dir * PLAYER_SPEED * dt, PLAYER_R, FIELD_W - PLAYER_R);
 
-    this.autoFire(dt);
+    this.fireWeapons(dt);
     this.spawnTimers(dt);
     this.moveEntities(dt, speed);
     this.resolveCollisions(dt);
@@ -378,6 +418,7 @@ export class RiverRunGame implements GameModule {
     for (const k of POWER_KINDS) if (this.fx[k] > 0) this.fx[k] = Math.max(0, this.fx[k] - dt);
     this.updateParticles(dt);
     if (this.flash > 0) this.flash = Math.max(0, this.flash - dt * 2.5);
+    if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 16);
     if (this.toastTime > 0) this.toastTime = Math.max(0, this.toastTime - dt);
 
     this.score = scoreFromDistance(this.distance, this.bonus);
@@ -388,9 +429,35 @@ export class RiverRunGame implements GameModule {
     }
   }
 
-  private autoFire(dt: number): void {
+  private fireWeapons(dt: number): void {
+    const input = this.ctx.input;
+
+    // Missiles slowly replenish so the secondary weapon is never dead for long.
+    if (this.missileCd > 0) this.missileCd = Math.max(0, this.missileCd - dt);
+    if (this.missileAmmo < MISSILE_MAX) {
+      this.missileRegenTimer += dt;
+      if (this.missileRegenTimer >= MISSILE_REGEN) {
+        this.missileRegenTimer = 0;
+        this.missileAmmo += 1;
+      }
+    } else {
+      this.missileRegenTimer = 0;
+    }
+
+    // Secondary: missile on the rising edge of the (tap) button.
+    const missileHeld = input.isButtonHeld('missile');
+    if (missileHeld && !this.prevMissileHeld) this.fireMissile();
+    this.prevMissileHeld = missileHeld;
+
+    // Primary: hold-to-fire. The timer keeps the original cadence; when the
+    // button is released we park it at 0 so the next press fires immediately.
     this.fireTimer -= dt;
+    if (!input.isButtonHeld('fire')) {
+      if (this.fireTimer < 0) this.fireTimer = 0;
+      return;
+    }
     if (this.fireTimer > 0) return;
+
     const pierce = this.active('piercing');
     const y = PLAYER_Y - 4;
     const make = (x: number, vx: number): Bullet => ({
@@ -411,6 +478,47 @@ export class RiverRunGame implements GameModule {
     }
     this.fireTimer = this.active('rapidFire') ? FIRE_RAPID : this.boosting ? FIRE_BOOST : FIRE_NORMAL;
     this.ctx.audio.playSfx('shoot');
+  }
+
+  private fireMissile(): void {
+    if (this.missileCd > 0) return;
+    if (this.missileAmmo <= 0) {
+      this.ctx.audio.playSfx('empty');
+      return;
+    }
+    this.missileAmmo -= 1;
+    this.missileCd = MISSILE_COOLDOWN;
+    this.missilesFired += 1;
+    const y = PLAYER_Y - PLAYER_R;
+    this.missiles.push({ x: this.px, y, prevX: this.px, prevY: y });
+    this.ctx.audio.playSfx('missile');
+    this.award('warmonger');
+  }
+
+  /** Area-of-effect detonation: damages every ship and tank within the blast. */
+  private explodeMissile(x: number, y: number, scoreMul: number): void {
+    this.ctx.audio.playSfx('missileBoom');
+    this.spawnExplosion(x, y, '#ff9d5d');
+    this.spawnExplosion(x, y, '#ffd27a');
+    this.setFlash('#ff9d5d', 0.5);
+    this.shake = Math.max(this.shake, 2.4);
+    for (const e of this.enemies) {
+      if (e.hp <= 0) continue;
+      if (!circleHit(x, y, MISSILE_BLAST_R, e.x, e.y, e.r)) continue;
+      e.hp -= MISSILE_DAMAGE;
+      e.hitFlash = 1;
+      if (e.hp <= 0) {
+        this.killEnemy(e, scoreMul, true);
+        this.missileKills += 1;
+      }
+    }
+    for (const t of this.tanks) {
+      if (t.hp <= 0) continue;
+      if (!circleHit(x, y, MISSILE_BLAST_R, t.x, t.y, TANK_R)) continue;
+      t.hp -= MISSILE_DAMAGE;
+      t.hitFlash = 1;
+      if (t.hp <= 0) this.spawnExplosion(t.x, t.y, '#46d4c4');
+    }
   }
 
   private spawnTimers(dt: number): void {
@@ -455,6 +563,16 @@ export class RiverRunGame implements GameModule {
       this.powerups.push({ kind: pickPowerKind(Math.random()), x, y: -POWERUP_R, prevY: -POWERUP_R });
       this.powerTimer = 7 + Math.random() * 5;
     }
+
+    // Warhead pickups (missile refills) spawn on their own slower cadence so
+    // they stay out of the timed-buff pool.
+    this.warheadTimer -= dt;
+    if (this.warheadTimer <= 0) {
+      const ch = channelAt(worldYAt(this.distance, -POWERUP_R));
+      const x = ch.center + (Math.random() * 2 - 1) * (ch.half - POWERUP_R - 1);
+      this.powerups.push({ kind: 'warhead', x, y: -POWERUP_R, prevY: -POWERUP_R });
+      this.warheadTimer = 14 + Math.random() * 8;
+    }
   }
 
   private moveEntities(dt: number, speed: number): void {
@@ -466,6 +584,8 @@ export class RiverRunGame implements GameModule {
       b.y -= BULLET_SPEED * dt;
     }
     this.bullets = this.bullets.filter((b) => b.y > -6 && b.x > -6 && b.x < FIELD_W + 6);
+
+    for (const m of this.missiles) m.y -= MISSILE_SPEED * dt;
 
     for (const e of this.enemies) {
       e.y += (speed * ENEMY_REL + ENEMY_EXTRA) * e.speedMul * slow * dt;
@@ -505,6 +625,34 @@ export class RiverRunGame implements GameModule {
 
   private resolveCollisions(dt: number): void {
     const scoreMul = this.active('scoreX2') ? 2 : 1;
+
+    // Missiles: detonate on contact with a ship/tank, or near the top.
+    for (let i = this.missiles.length - 1; i >= 0; i -= 1) {
+      const m = this.missiles[i]!;
+      let detonate = m.y <= MISSILE_DETONATE_Y;
+      if (!detonate) {
+        for (const e of this.enemies) {
+          if (e.hp > 0 && circleHit(m.x, m.y, 2, e.x, e.y, e.r)) {
+            detonate = true;
+            break;
+          }
+        }
+      }
+      if (!detonate) {
+        for (const t of this.tanks) {
+          if (t.hp > 0 && circleHit(m.x, m.y, 2, t.x, t.y, TANK_R)) {
+            detonate = true;
+            break;
+          }
+        }
+      }
+      if (detonate) {
+        this.explodeMissile(m.x, m.y, scoreMul);
+        this.missiles.splice(i, 1);
+      }
+    }
+    this.missiles = this.missiles.filter((m) => m.y > -8);
+    this.enemies = this.enemies.filter((e) => e.hp > 0);
 
     // Bullets vs enemies.
     for (const e of this.enemies) {
@@ -604,18 +752,33 @@ export class RiverRunGame implements GameModule {
     }
   }
 
-  private killEnemy(e: Enemy, scoreMul: number): void {
+  private killEnemy(e: Enemy, scoreMul: number, silent = false): void {
     e.hp = 0;
     this.kills += 1;
     if (e.big) this.bigKills += 1;
     this.bonus += e.points * scoreMul;
-    this.spawnExplosion(e.x, e.y, ENEMY_COLORS[e.kind]);
-    this.ctx.audio.playSfx(e.big ? 'bigBoom' : 'explosion');
+    // Missile kills share one big blast/boom, so skip the per-ship FX.
+    if (!silent) {
+      this.spawnExplosion(e.x, e.y, ENEMY_COLORS[e.kind]);
+      this.ctx.audio.playSfx(e.big ? 'bigBoom' : 'explosion');
+    }
     this.award('firstKill');
   }
 
   private applyPower(kind: PowerKind): void {
     const spec = POWERS[kind];
+    // Warhead is an instant missile refill, not a timed buff.
+    if (kind === 'warhead') {
+      this.missileAmmo = Math.min(MISSILE_MAX, this.missileAmmo + 2);
+      this.powerupsCollected += 1;
+      this.award('collector');
+      this.toast = this.ctx.i18n('riverRun:powers.warhead');
+      this.toastColor = spec.color;
+      this.toastTime = 1.5;
+      this.ctx.audio.playSfx('powerup');
+      this.setFlash(spec.color, 0.32);
+      return;
+    }
     this.fx[kind] = spec.duration;
     this.powerupsCollected += 1;
     this.award('collector');
@@ -673,6 +836,8 @@ export class RiverRunGame implements GameModule {
         bigKills: this.bigKills,
         fuel: this.fuelTanks,
         boosts: this.boosts,
+        missiles: this.missilesFired,
+        missileKills: this.missileKills,
         powerups: this.powerupsCollected,
         usedShield: this.usedKinds.has('shield') ? 1 : 0,
         usedSuperSpeed: this.usedKinds.has('superSpeed') ? 1 : 0,
@@ -702,8 +867,11 @@ export class RiverRunGame implements GameModule {
     if (width <= 0 || height <= 0) return;
 
     const s = Math.min(width / FIELD_W, height / FIELD_H);
-    const offX = (width - FIELD_W * s) / 2;
-    const offY = (height - FIELD_H * s) / 2;
+    const shakeMag = this.ctx.reducedMotion ? 0 : this.shake;
+    const shX = shakeMag > 0 ? (Math.random() * 2 - 1) * shakeMag * s : 0;
+    const shY = shakeMag > 0 ? (Math.random() * 2 - 1) * shakeMag * s : 0;
+    const offX = (width - FIELD_W * s) / 2 + shX;
+    const offY = (height - FIELD_H * s) / 2 + shY;
     const X = (x: number): number => offX + x * s;
     const Y = (y: number): number => offY + y * s;
     const dist = lerp(this.prevDistance, this.distance, alpha);
@@ -721,6 +889,7 @@ export class RiverRunGame implements GameModule {
     this.drawEnemies(g, X, Y, s, alpha, night);
     this.drawEnemyBullets(g, X, Y, s, alpha);
     this.drawBullets(g, X, Y, s, alpha);
+    this.drawMissiles(g, X, Y, s, alpha);
     this.drawParticles(g, X, Y, s);
     if (!this.gameOver) this.drawPlayer(g, X, Y, s, alpha, night);
 
@@ -970,6 +1139,41 @@ export class RiverRunGame implements GameModule {
     g.shadowBlur = 0;
   }
 
+  private drawMissiles(
+    g: CanvasRenderingContext2D,
+    X: (x: number) => number,
+    Y: (y: number) => number,
+    s: number,
+    alpha: number,
+  ): void {
+    g.shadowColor = '#ff9d5d';
+    g.shadowBlur = 8;
+    for (const m of this.missiles) {
+      const x = lerp(m.prevX, m.x, alpha);
+      const y = lerp(m.prevY, m.y, alpha);
+      const cx = X(x);
+      const cy = Y(y);
+      // Exhaust flame.
+      const flick = this.ctx.reducedMotion ? 1 : 0.7 + Math.random() * 0.6;
+      g.fillStyle = '#ffd27a';
+      g.beginPath();
+      g.moveTo(cx - s * 0.8, cy + s * 1.4);
+      g.lineTo(cx + s * 0.8, cy + s * 1.4);
+      g.lineTo(cx, cy + s * (1.4 + 2.2 * flick));
+      g.closePath();
+      g.fill();
+      // Body (pointing up).
+      g.fillStyle = '#ff7a45';
+      g.beginPath();
+      g.moveTo(cx, cy - s * 2.4);
+      g.lineTo(cx + s * 1.1, cy + s * 1.4);
+      g.lineTo(cx - s * 1.1, cy + s * 1.4);
+      g.closePath();
+      g.fill();
+    }
+    g.shadowBlur = 0;
+  }
+
   private drawParticles(
     g: CanvasRenderingContext2D,
     X: (x: number) => number,
@@ -1120,6 +1324,22 @@ export class RiverRunGame implements GameModule {
       g.fillStyle = 'rgba(255,255,255,0.5)';
       g.fillRect(chipX, chipY + chipS + s * 0.4, chipS * clamp(this.fx[k] / spec.duration, 0, 1), s);
       chipX += chipS + 2 * s;
+    }
+
+    // Missile ammo: little rockets on the right of the chip row.
+    const pipR = 2 * s;
+    const pipGap = 5 * s;
+    for (let i = 0; i < MISSILE_MAX; i += 1) {
+      const px = barX + barW - pipR - i * pipGap;
+      const py = chipY + pipR;
+      const armed = i < this.missileAmmo;
+      g.fillStyle = armed ? '#ff9d5d' : 'rgba(255,157,93,0.22)';
+      g.beginPath();
+      g.moveTo(px, py - pipR);
+      g.lineTo(px + pipR * 0.8, py + pipR);
+      g.lineTo(px - pipR * 0.8, py + pipR);
+      g.closePath();
+      g.fill();
     }
 
     if (this.toastTime > 0) {
