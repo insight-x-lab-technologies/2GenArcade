@@ -173,9 +173,14 @@ The shell owns all side effects. A game `emit`s `score` (HUD), `gameover`
   add chaos, and 30 trophies reward it all.
 - 👾 **Star Defender** — original fixed shooter; hold off descending waves of
   wraiths, charge the *Nova* screen-sweep beam, and survive on three lives.
+- 🧱 **Brick Bounce** — original breakout-style game; steer the paddle to keep a
+  glowing ball alive and smash neon brick walls (sturdier back rows take more
+  hits). Fill the *Blaze* to ignite a piercing, double-points Blaze Ball, catch
+  seven temporary power-ups (wide paddle, multiball, slow-mo, magnet, cannons,
+  floor shield, bonus), and climb endless, faster levels across 8 trophies.
 
 **Planned** (contract ready, not yet implemented):
-Brick Bounce, Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
+Maze Muncher, Frog Crossing, Cannon Duel, Bug Blaster,
 Asteroid Drift, Paddle Clash, Match Cascade, Pipe Flow, Light Flip,
 Sliding Tiles, Sky Hopper, Cave Flyer, Tower Stack, Dodge Storm.
 

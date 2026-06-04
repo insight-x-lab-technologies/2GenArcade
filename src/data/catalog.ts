@@ -21,7 +21,6 @@ const titleKey = (id: string): string => `catalog:gameTitles.${id}`;
 // Display metadata for every planned game (glyph + accent) so the Home grid
 // looks complete. Only Block Drop ships a real module in this phase.
 const PLANNED: Array<{ id: string; thumbnail: string; accent: AccentColor }> = [
-  { id: 'brick-bounce', thumbnail: '🧱', accent: 'coral' },
   { id: 'maze-muncher', thumbnail: '😋', accent: 'amber' },
   { id: 'frog-crossing', thumbnail: '🐸', accent: 'violet' },
   { id: 'cannon-duel', thumbnail: '💥', accent: 'coral' },
@@ -83,6 +82,15 @@ export const CATALOG: CatalogGame[] = [
     accent: 'violet',
     status: 'available',
     load: () => import('@/games/star-defender').then((m) => m.starDefenderFactory),
+  },
+  {
+    id: 'brick-bounce',
+    packId: 'pack-base',
+    titleKey: titleKey('brick-bounce'),
+    thumbnail: '🧱',
+    accent: 'coral',
+    status: 'available',
+    load: () => import('@/games/brick-bounce').then((m) => m.brickBounceFactory),
   },
   ...PLANNED.map<CatalogGame>((g) => ({
     id: g.id,

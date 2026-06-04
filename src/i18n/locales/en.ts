@@ -140,6 +140,8 @@ export const en: AppResources = {
         'Weave through traffic on a neon highway, graze cars to charge Burn, and unleash Nitro to double your points.',
       'star-defender':
         'Defend the station from descending waves of wraiths, charge up, and unleash the Nova to sweep the screen at double points.',
+      'brick-bounce':
+        'Bounce the glowing ball off your paddle, smash walls of neon bricks, and fill the Blaze to plough through them at double points.',
     },
     packs: {
       'pack-base': {
@@ -329,6 +331,36 @@ export const en: AppResources = {
       nova: { name: 'Supernova', description: 'Unleash the Nova once.' },
       sharpshooter: { name: 'Sharpshooter', description: 'Destroy 100 wraiths in one run.' },
       highScore: { name: 'Star legend', description: 'Score 10,000 points.' },
+    },
+  },
+  brickBounce: {
+    hudCharge: 'Blaze',
+    hudBlaze: 'Blazing!',
+    hudLevel: 'Level {{level}}',
+    levelBanner: 'Level {{level}}',
+    levelClear: 'Wall cleared!',
+    blazeOn: 'Blaze Ball!',
+    launchHint: 'Tap up to launch',
+    powers: {
+      widen: 'Wide paddle',
+      multi: 'Multiball',
+      slow: 'Slow motion',
+      catch: 'Magnet paddle',
+      cannon: 'Cannons',
+      shield: 'Floor shield',
+      bonus: 'Bonus +500',
+    },
+    howToPlay:
+      'Use the d-pad (or arrow keys) to move the paddle and tap up to launch the ball. Bounce the ball to smash every brick — back rows take more hits. Clearing the wall advances to a faster, tougher level. Each hit fills the Blaze; when it tops out the ball ignites, ploughs through bricks and scores double for a few seconds. Bricks can drop power-ups: catch them with the paddle. You have 3 lives — lose one if your last ball falls.',
+    trophies: {
+      firstBrick: { name: 'First smash', description: 'Break your first brick.' },
+      demolisher: { name: 'Demolisher', description: 'Break 100 bricks in one run.' },
+      wrecker: { name: 'Wrecking ball', description: 'Break 500 bricks in one run.' },
+      blazeRunner: { name: 'On fire', description: 'Ignite the Blaze Ball once.' },
+      clearOut: { name: 'Clean sweep', description: 'Clear a full wall of bricks.' },
+      veteran: { name: 'Veteran', description: 'Reach level 5.' },
+      magpie: { name: 'Collector', description: 'Grab 10 power-ups in one run.' },
+      legend: { name: 'Arcade legend', description: 'Score 10,000 points.' },
     },
   },
 };

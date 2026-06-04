@@ -138,6 +138,8 @@ export const ptBR = {
         'Costure o trânsito numa rodovia de neon, roce nos carros para encher o Combustão e dispare o Nitro para dobrar os pontos.',
       'star-defender':
         'Defenda a estação de ondas de wraiths que descem, encha a Carga e dispare a Nova para varrer a tela com pontos em dobro.',
+      'brick-bounce':
+        'Rebata a bola luminosa com a raquete, quebre paredes de blocos de neon e encha a Chama para atravessar tudo com pontos em dobro.',
     },
     packs: {
       'pack-base': {
@@ -327,6 +329,36 @@ export const ptBR = {
       nova: { name: 'Supernova', description: 'Dispare a Nova uma vez.' },
       sharpshooter: { name: 'Atirador de elite', description: 'Destrua 100 wraiths em uma partida.' },
       highScore: { name: 'Lenda das estrelas', description: 'Faça 10.000 pontos.' },
+    },
+  },
+  brickBounce: {
+    hudCharge: 'Chama',
+    hudBlaze: 'Em chamas!',
+    hudLevel: 'Fase {{level}}',
+    levelBanner: 'Fase {{level}}',
+    levelClear: 'Fase limpa!',
+    blazeOn: 'Bola de fogo!',
+    launchHint: 'Toque em cima para lançar',
+    powers: {
+      widen: 'Raquete larga',
+      multi: 'Multibola',
+      slow: 'Câmera lenta',
+      catch: 'Raquete magnética',
+      cannon: 'Canhões',
+      shield: 'Barreira',
+      bonus: 'Bônus +500',
+    },
+    howToPlay:
+      'Use o direcional (ou as setas) para mover a raquete e toque em cima para lançar a bola. Rebata a bola para quebrar todos os blocos — os de trás aguentam mais batidas. Limpar a parede avança para uma fase mais rápida e resistente. Cada batida enche a Chama; quando enche, a bola pega fogo, atravessa os blocos e vale o dobro por alguns segundos. Blocos podem soltar power-ups: pegue-os com a raquete. Você tem 3 vidas — perde uma se deixar a última bola cair.',
+    trophies: {
+      firstBrick: { name: 'Primeira batida', description: 'Quebre seu primeiro bloco.' },
+      demolisher: { name: 'Demolidor', description: 'Quebre 100 blocos em uma partida.' },
+      wrecker: { name: 'Bola de demolição', description: 'Quebre 500 blocos em uma partida.' },
+      blazeRunner: { name: 'Pegou fogo', description: 'Acenda a Bola de fogo uma vez.' },
+      clearOut: { name: 'Faxina', description: 'Limpe uma parede inteira de blocos.' },
+      veteran: { name: 'Veterano', description: 'Chegue à fase 5.' },
+      magpie: { name: 'Colecionador', description: 'Pegue 10 power-ups em uma partida.' },
+      legend: { name: 'Lenda do fliperama', description: 'Faça 10.000 pontos.' },
     },
   },
 };
