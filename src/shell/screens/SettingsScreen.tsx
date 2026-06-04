@@ -27,6 +27,7 @@ export function SettingsScreen() {
   const setSfxVolume = useArcadeStore((s) => s.setSfxVolume);
   const toggleCrt = useArcadeStore((s) => s.toggleCrt);
   const toggleHaptics = useArcadeStore((s) => s.toggleHaptics);
+  const toggleClickSound = useArcadeStore((s) => s.toggleClickSound);
   const setLanguage = useArcadeStore((s) => s.setLanguage);
   const setControlStyle = useArcadeStore((s) => s.setControlStyle);
   const setNickname = useArcadeStore((s) => s.setNickname);
@@ -135,6 +136,19 @@ export function SettingsScreen() {
           <p className="mt-2 font-mono text-[10px] text-muted/70">
             {hapticsSupported() ? t('settingsHapticsHint') : t('settingsHapticsUnsupported')}
           </p>
+        </Section>
+
+        {/* Click sound */}
+        <Section title={t('settingsClickSound')}>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-sm text-muted">{t('settingsClickSound')}</span>
+            <Toggle
+              checked={settings.clickSound}
+              onChange={toggleClickSound}
+              label={t('settingsClickSound')}
+            />
+          </div>
+          <p className="mt-2 font-mono text-[10px] text-muted/70">{t('settingsClickSoundHint')}</p>
         </Section>
 
         {/* CRT */}

@@ -73,6 +73,36 @@ export const brickHp = (row: number, rows: number, level: number): number => {
 /** Points awarded for destroying a brick of the given (starting) hp. */
 export const brickPoints = (hp: number): number => hp * 25;
 
+// --- Brick variety (F.2) -------------------------------------------------------
+// Beyond plain HP bricks, fields can mix in special bricks from level 2 onward.
+export type BrickKind =
+  | 'normal'
+  | 'steel' // indestructible: reflects (even the Blaze Ball), never clears
+  | 'explosive' // on death, destroys neighbours in a radius (chain reaction)
+  | 'mover' // drifts sideways, bouncing off the walls
+  | 'regen'; // heals 1 hp a while after being chipped (if not destroyed)
+
+export const EXPLOSION_RADIUS = 14; // field units — neighbours within die too
+export const REGEN_DELAY = 6; // seconds before a chipped regen brick heals 1
+export const MOVER_SPEED = 11; // units/s sideways drift
+
+/** Pick a brick kind by weight, gated by level (early fields stay plain). Pure
+ *  given `rand` ∈ [0, 1) so the mix is testable. */
+export const pickBrickKind = (level: number, rand: number): BrickKind => {
+  if (level < 2) return 'normal';
+  const r = clamp(rand, 0, 0.999999);
+  const pExpl = Math.min(0.12, 0.05 + level * 0.005);
+  const pSteel = level >= 3 ? Math.min(0.08, 0.02 + level * 0.004) : 0;
+  const pMover = level >= 4 ? Math.min(0.1, 0.02 + level * 0.005) : 0;
+  const pRegen = level >= 3 ? Math.min(0.08, 0.02 + level * 0.004) : 0;
+  let acc = 0;
+  if (r < (acc += pExpl)) return 'explosive';
+  if (r < (acc += pSteel)) return 'steel';
+  if (r < (acc += pMover)) return 'mover';
+  if (r < (acc += pRegen)) return 'regen';
+  return 'normal';
+};
+
 /** Usable inner width for the brick field (between the side walls). */
 export const fieldInnerW = (): number => FIELD_W - WALL * 2;
 

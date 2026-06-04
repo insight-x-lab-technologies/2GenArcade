@@ -13,6 +13,8 @@ import {
   MIN_SPEED,
   NEARMISS_GAP,
   NUM_LANES,
+  ONCOMING_MIN_DISTANCE,
+  oncomingChance,
   onRoad,
   pickPowerKind,
   pickVehicleKind,
@@ -194,6 +196,18 @@ describe('vehicles', () => {
     for (let r = 0; r < 1; r += 0.013) {
       expect(VEHICLE_KINDS).toContain(pickVehicleKind(r));
     }
+  });
+});
+
+describe('oncomingChance', () => {
+  it('is zero until the opening stretch is over, then ramps and caps', () => {
+    expect(oncomingChance(0)).toBe(0);
+    expect(oncomingChance(ONCOMING_MIN_DISTANCE - 1)).toBe(0);
+    expect(oncomingChance(ONCOMING_MIN_DISTANCE + 2000)).toBeGreaterThan(0);
+    expect(oncomingChance(999999)).toBeLessThanOrEqual(0.34);
+    expect(oncomingChance(ONCOMING_MIN_DISTANCE + 6000)).toBeGreaterThan(
+      oncomingChance(ONCOMING_MIN_DISTANCE + 2000),
+    );
   });
 });
 

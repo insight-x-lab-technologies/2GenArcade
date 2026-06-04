@@ -14,6 +14,7 @@ import {
   levelBallSpeed,
   MAX_BOUNCE,
   paddleBounce,
+  pickBrickKind,
   pickPowerKind,
   POWER_KINDS,
   ROWS_BASE,
@@ -114,5 +115,22 @@ describe('pickPowerKind', () => {
       const k = pickPowerKind(i / 50);
       expect(POWER_KINDS).toContain(k);
     }
+  });
+});
+
+describe('pickBrickKind', () => {
+  it('keeps the opening field plain (level 1 is always normal)', () => {
+    for (let i = 0; i < 30; i += 1) expect(pickBrickKind(1, i / 30)).toBe('normal');
+  });
+
+  it('introduces special kinds from level 2+ and stays within the known set', () => {
+    const kinds = new Set<string>();
+    for (let lvl = 2; lvl <= 8; lvl += 1) {
+      for (let i = 0; i < 200; i += 1) kinds.add(pickBrickKind(lvl, i / 200));
+    }
+    for (const k of kinds) {
+      expect(['normal', 'steel', 'explosive', 'mover', 'regen']).toContain(k);
+    }
+    expect([...kinds].some((k) => k !== 'normal')).toBe(true);
   });
 });

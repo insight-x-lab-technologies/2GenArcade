@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { vibrate } from '@/lib';
+import { playClick, vibrate } from '@/lib';
 import { cn } from './cn';
 
 type Variant = 'primary' | 'outline' | 'ghost';
@@ -40,7 +40,10 @@ export function ArcadeButton({
   ...rest
 }: ArcadeButtonProps) {
   const handlePointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
-    if (!rest.disabled) vibrate('press');
+    if (!rest.disabled) {
+      vibrate('press');
+      playClick();
+    }
     onPointerDown?.(e);
   };
   const base =

@@ -79,6 +79,8 @@ export const en: AppResources = {
     settingsHaptics: 'Vibration',
     settingsHapticsHint: 'Haptic feedback when you tap controls and buttons.',
     settingsHapticsUnsupported: 'Your device has no vibration — this option has no effect.',
+    settingsClickSound: 'Click sound',
+    settingsClickSoundHint: 'Plays a short click when you press controls and buttons (follows the SFX volume and mute).',
     settingsControl: 'Controls',
     settingsControl_dpad: 'Buttons (d-pad)',
     settingsControl_dpad_hint: 'The classic four-arrow cross.',
@@ -284,7 +286,7 @@ export const en: AppResources = {
       dash: 'Dash',
     },
     howToPlay:
-      'Use the d-pad (or arrow keys) to weave through traffic: left/right steer, hold up to accelerate and down to brake. Graze past vehicles (bike, car, truck, rig) to charge Burn — when full, tap the Nitro button to fire it (extra speed and points, phase-through). The dash button gives a quick lateral sidestep in the direction you are holding — great for dodging a crash, even in rain or mud. Grab power-ups for temporary edges. The road changes terrain (asphalt, rain, mud, snow), altering speed and grip, and a day→afternoon→night cycle changes visibility. Crashing into traffic ends the run.',
+      'Use the d-pad (or arrow keys) to weave through traffic: left/right steer, hold up to accelerate and down to brake. Graze past vehicles (bike, car, truck, rig) to charge Burn — when full, tap the Nitro button to fire it (extra speed and points, phase-through). The dash button gives a quick lateral sidestep in the direction you are holding — great for dodging a crash, even in rain or mud. Grab power-ups for temporary edges. Watch for oncoming vehicles (white headlights bearing down on you, very fast) — grazing past them scores double; and for oil slicks, which do not crash you but make the car skid for a moment (Racing Tires ignore them). The road changes terrain (asphalt, rain, mud, snow), altering speed and grip, and a day→afternoon→night cycle changes visibility. Crashing into traffic ends the run.',
     terrains: {
       asphalt: 'Asphalt',
       rain: 'Rain',
@@ -340,6 +342,10 @@ export const en: AppResources = {
         name: 'Rig hunter',
         description: 'Pass 20 big vehicles (truck/rig) in one run.',
       },
+      daredevil: {
+        name: 'Wrong way',
+        description: 'Graze past 15 oncoming vehicles in one run.',
+      },
     },
   },
   starDefender: {
@@ -388,7 +394,7 @@ export const en: AppResources = {
       bonus: 'Bonus +500',
     },
     howToPlay:
-      'Use the d-pad (or arrow keys) to move the paddle and tap up to launch the ball — an aim line previews the serve angle (move the paddle to adjust). Bounce the ball to smash every brick — back rows take more hits. Clearing the wall advances to a faster, tougher level. Each hit fills the Blaze; when it tops out, tap the Blaze button to ignite it: the ball ploughs through bricks and scores double for a few seconds. Bricks can drop power-ups: catch them with the paddle. You have 3 lives — lose one if your last ball falls.',
+      'Use the d-pad (or arrow keys) to move the paddle and tap up to launch the ball — an aim line previews the serve angle (move the paddle to adjust). Bounce the ball to smash every brick — back rows take more hits. From level 2, special bricks appear: explosive 💥 (blow up neighbours in a chain), steel (indestructible — they only deflect, even the Blaze Ball), movers (drift sideways) and regenerating (they heal back unless you finish them off). Clearing the wall advances to a faster, tougher level. Each hit fills the Blaze; when it tops out, tap the Blaze button to ignite it: the ball ploughs through bricks and scores double for a few seconds. Bricks can drop power-ups: catch them with the paddle. You have 3 lives — lose one if your last ball falls.',
     trophies: {
       firstBrick: { name: 'First smash', description: 'Break your first brick.' },
       demolisher: { name: 'Demolisher', description: 'Break 100 bricks in one run.' },
@@ -397,6 +403,7 @@ export const en: AppResources = {
       clearOut: { name: 'Clean sweep', description: 'Clear a full wall of bricks.' },
       veteran: { name: 'Veteran', description: 'Reach level 5.' },
       magpie: { name: 'Collector', description: 'Grab 10 power-ups in one run.' },
+      chainReaction: { name: 'Chain reaction', description: 'Destroy 20 bricks with explosions in one run.' },
       legend: { name: 'Arcade legend', description: 'Score 10,000 points.' },
     },
   },

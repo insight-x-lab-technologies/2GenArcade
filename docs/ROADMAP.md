@@ -38,8 +38,14 @@ de River Run e metade das melhorias dos shooters.
 **Desbloqueia:** River Run (B3.1), Star Defender (E.1/E.2), Road Burner (D.1),
 Snake Coil (C.1), Brick Bounce (F.1) e jogos planejados (Cannon Duel, Bug Blaster…).
 
-### A2. Feedback tátil (haptics) + clique configurável — `P1` · `S–M` — ✅ FEITO (2026-06-04, parte haptics)
+### A2. Feedback tátil (haptics) + clique configurável — `P1` · `S–M` — ✅ FEITO (2026-06-04)
 **Pedido direto do A.** Hoje não há vibração nem som de clique nos controles.
+
+**Implementado (clique):** `src/lib/uiSound.ts` espelha o módulo de haptics — flag
+global mirada do Settings, toca um clique curto via o SFX bus compartilhado (logo
+respeita volume de efeitos + mudo, e é no-op até o áudio destravar). Disparado em
+`ArcadeButton`/`VirtualDpad`/`ActionButtons` junto do `vibrate`. Novo toggle
+"Som de clique" na `SettingsScreen` (default ligado) + strings i18n.
 
 **Escopo:**
 - `src/lib/haptics.ts`: wrapper de `navigator.vibrate(pattern)` com *feature
@@ -151,8 +157,13 @@ score por distância.
   "NITRO PRONTO") + botão **Esquiva** (tap, arrancada lateral que ignora a
   aderência — funciona até na chuva/barro/neve — com cooldown). SFX de esquiva.
 
-### D.2. Tráfego em sentido contrário + obstáculos — `P1` · `M`
+### D.2. Tráfego em sentido contrário + obstáculos — `P1` · `M` — ✅ FEITO (2026-06-04)
 - Faixa de carros vindo na contramão, óleo/poças, rampas/saltos. Aumenta tensão.
+- **Implementado:** veículos na **contramão** (faróis brancos, alta velocidade de
+  aproximação; só após ~1400 m, probabilidade rampando com a distância) que valem
+  Combustão/pontos em dobro ao passar raspando + troféu **Contramão** (15 passes).
+  **Manchas de óleo** que não matam, mas zeram a aderência por ~1,1 s (derrapagem;
+  Pneus de Corrida ignoram). Constantes puras + testes de `oncomingChance`.
 
 ### D.3. Rival AI / draft aprofundado — `P2` · `L`
 - Um ou dois carros-rival com IA; aproveitar o vácuo (draft) por mais pontos.
@@ -197,9 +208,14 @@ auto-ignição), 7 power-ups, 8 troféus, níveis infinitos mais rápidos, ponto
   a Chama enche; HUD "CHAMA PRONTA"). Linha de mira tracejada no saque que
   traça a trajetória (com ricochetes nas paredes) e segue a posição da raquete.
 
-### F.2. Variedade de bricks — `P1` · `M`
+### F.2. Variedade de bricks — `P1` · `M` — ✅ FEITO (2026-06-04)
 - Bricks explosivos (dano em cadeia), indestrutíveis, móveis, regenerativos,
   portais. O modelo de HP por brick já existe — extensão natural.
+- **Implementado:** tipos **explosivo** (estoura vizinhos no raio, em cadeia),
+  **aço** (indestrutível — ricocheteia até a bola de fogo, não conta p/ limpar a
+  fase), **móvel** (desliza e bate nas paredes) e **regenerativo** (recupera HP se
+  não for finalizado). Aparecem da fase 2+ via `pickBrickKind` (puro, testado),
+  com marcadores visuais. Troféu **Reação em cadeia** (20 abates por explosão).
 
 ### F.3. Temas/Chefe de fase — `P2` · `M`
 - "Brick-chefe" grande de múltiplos hits a cada N fases; layouts temáticos

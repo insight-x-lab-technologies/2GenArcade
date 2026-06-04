@@ -20,23 +20,28 @@ import {
   brickReflection,
   circleRectHit,
   DROP_CHANCE,
+  EXPLOSION_RADIUS,
   FIELD_H,
   FIELD_W,
   levelBallSpeed,
   MAX_BOUNCE,
+  MOVER_SPEED,
   PADDLE_HH,
   PADDLE_HW_BASE,
   PADDLE_HW_WIDE,
   PADDLE_SPEED,
   PADDLE_Y,
   paddleBounce,
+  pickBrickKind,
   pickPowerKind,
   POWERS,
   POWERUP_FALL,
   POWERUP_R,
+  REGEN_DELAY,
   rowsForLevel,
   SLOW_FACTOR,
   WALL,
+  type BrickKind,
   type PowerKind,
 } from './logic';
 
@@ -64,6 +69,10 @@ interface Brick {
   hp: number;
   maxHp: number;
   flash: number;
+  kind: BrickKind;
+  vx: number; // mover drift (units/s)
+  regen: number; // regen countdown (s); >0 means a heal is pending
+  dead: boolean; // marked during a hit pass, swept after
 }
 interface PowerUp {
   x: number;
@@ -132,6 +141,7 @@ export class BrickBounceGame implements GameModule {
 
   // Stats / trophy flags.
   private bricksBroken = 0;
+  private chainKills = 0;
   private blazes = 0;
   private levelsCleared = 0;
   private powerupsTaken = 0;
@@ -182,6 +192,7 @@ export class BrickBounceGame implements GameModule {
     this.toast = '';
     this.toastTime = 0;
     this.bricksBroken = 0;
+    this.chainKills = 0;
     this.blazes = 0;
     this.levelsCleared = 0;
     this.powerupsTaken = 0;
@@ -205,6 +216,7 @@ export class BrickBounceGame implements GameModule {
         // A sparse, symmetric gap pattern keeps fields readable and varied.
         if (level > 1 && (row + col) % 7 === level % 7) continue;
         const hp = brickHp(row, rows, level);
+        const kind = pickBrickKind(level, Math.random());
         this.bricks.push({
           x: brickCenterX(col),
           y: brickCenterY(row),
@@ -213,8 +225,18 @@ export class BrickBounceGame implements GameModule {
           hp,
           maxHp: hp,
           flash: 0,
+          kind,
+          vx: kind === 'mover' ? (Math.random() < 0.5 ? -MOVER_SPEED : MOVER_SPEED) : 0,
+          regen: 0,
+          dead: false,
         });
       }
+    }
+    // Safety: never let an (improbable) all-steel field clear instantly.
+    if (this.bricks.length > 0 && !this.bricks.some((br) => br.kind !== 'steel')) {
+      const b = this.bricks[0]!;
+      b.kind = 'normal';
+      b.vx = 0;
     }
     this.speed = levelBallSpeed(level);
   }
@@ -274,14 +296,16 @@ export class BrickBounceGame implements GameModule {
       if (this.levelBreak <= 0) this.startLevel(this.level);
     }
 
+    this.updateBricks(dt);
     this.moveBalls(dt);
     this.updateCannon(dt);
     this.moveBolts(dt);
     this.movePowerups(dt);
     this.updateParticles(dt);
 
-    // Field cleared → short banner, then a tougher field.
-    if (this.bricks.length === 0 && this.levelBreak <= 0 && !this.gameOver) {
+    // Field cleared once no *breakable* bricks remain (steel never counts).
+    const breakableLeft = this.bricks.some((br) => br.kind !== 'steel');
+    if (!breakableLeft && this.levelBreak <= 0 && !this.gameOver) {
       this.levelsCleared += 1;
       this.score += 250; // clear bonus
       this.level += 1;
@@ -417,45 +441,107 @@ export class BrickBounceGame implements GameModule {
   }
 
   private brickCollisions(b: Ball, blazing: boolean): void {
-    for (let i = this.bricks.length - 1; i >= 0; i -= 1) {
-      const br = this.bricks[i]!;
+    let reflected = false;
+    for (const br of this.bricks) {
+      if (br.dead) continue;
       const ref = brickReflection(b.x, b.y, BALL_R, br.x, br.y, br.hw, br.hh);
       if (!ref.hit) continue;
 
-      this.damageBrick(i, br, blazing ? br.hp : 1);
+      this.hitBrick(br, blazing ? Math.max(1, br.hp) : 1);
 
-      if (blazing) {
-        // Blaze Ball ploughs straight through — no reflection.
-        continue;
+      // The Blaze Ball ploughs through everything except steel, which still
+      // reflects it. A normal ball reflects off the first brick it touches.
+      if (blazing && br.kind !== 'steel') continue;
+      if (!reflected) {
+        if (ref.flipX) b.vx = -b.vx;
+        if (ref.flipY) b.vy = -b.vy;
+        if (ref.flipX) b.x += Math.sign(b.x - br.x) * 0.4;
+        if (ref.flipY) b.y += Math.sign(b.y - br.y) * 0.4;
+        reflected = true;
       }
-      if (ref.flipX) b.vx = -b.vx;
-      if (ref.flipY) b.vy = -b.vy;
-      // Nudge out so we don't re-collide next tick.
-      if (ref.flipX) b.x += Math.sign(b.x - br.x) * 0.4;
-      if (ref.flipY) b.y += Math.sign(b.y - br.y) * 0.4;
-      break; // one reflection per ball per tick
+      if (!blazing) break; // one reflection per ball per tick
     }
+    this.sweepDead();
   }
 
-  private damageBrick(index: number, br: Brick, dmg: number): void {
-    br.hp -= dmg;
-    this.blaze = Math.min(BLAZE_MAX, this.blaze + BLAZE_PER_HIT);
-    if (br.hp > 0) {
+  /** A single brick takes a hit. Steel shrugs it off; others lose hp and may die. */
+  private hitBrick(br: Brick, dmg: number): void {
+    if (br.dead) return;
+    if (br.kind === 'steel') {
       br.flash = 1;
       this.ctx.audio.playSfx('brickHit');
       return;
     }
-    // Destroyed.
-    this.bricks.splice(index, 1);
+    this.blaze = Math.min(BLAZE_MAX, this.blaze + BLAZE_PER_HIT);
+    br.hp -= dmg;
+    if (br.hp > 0) {
+      br.flash = 1;
+      if (br.kind === 'regen') br.regen = REGEN_DELAY; // schedule a heal
+      this.ctx.audio.playSfx('brickHit');
+      return;
+    }
+    this.killBrick(br, false);
+  }
+
+  /** Destroy a brick: score, particles, drops, and explosive chain reactions. */
+  private killBrick(br: Brick, chained: boolean): void {
+    if (br.dead) return;
+    br.dead = true;
     this.bricksBroken += 1;
+    if (chained) {
+      this.chainKills += 1;
+      if (this.chainKills >= 20) this.ctx.emit.emit('trophy', { trophyId: 'chainReaction' });
+    }
     this.score += brickPoints(br.maxHp) * (this.blazeTime > 0 ? 2 : 1);
     this.spawnBrickBurst(br);
-    this.ctx.audio.playSfx('brickBreak');
+    this.ctx.audio.playSfx(br.kind === 'explosive' ? 'blaze' : 'brickBreak');
     if (!this.firstBrickAwarded) {
       this.firstBrickAwarded = true;
       this.ctx.emit.emit('trophy', { trophyId: 'firstBrick' });
     }
     if (Math.random() < DROP_CHANCE) this.dropPowerUp(br.x, br.y);
+    if (br.kind === 'explosive') this.explode(br);
+  }
+
+  /** Explosive chain: destroy non-steel neighbours within the blast radius. */
+  private explode(src: Brick): void {
+    this.shake = Math.max(this.shake, 0.8);
+    this.flash = Math.max(this.flash, 0.4);
+    for (const br of this.bricks) {
+      if (br.dead || br === src || br.kind === 'steel') continue;
+      if (Math.hypot(br.x - src.x, br.y - src.y) <= EXPLOSION_RADIUS) {
+        this.killBrick(br, true); // recurses for chained explosives (dead-guarded)
+      }
+    }
+  }
+
+  private sweepDead(): void {
+    if (this.bricks.some((br) => br.dead)) this.bricks = this.bricks.filter((br) => !br.dead);
+  }
+
+  /** Movers drift and bounce; regen bricks slowly heal after being chipped. */
+  private updateBricks(dt: number): void {
+    for (const br of this.bricks) {
+      if (br.kind === 'mover') {
+        br.x += br.vx * dt;
+        const lo = WALL + br.hw;
+        const hi = FIELD_W - WALL - br.hw;
+        if (br.x < lo) {
+          br.x = lo;
+          br.vx = Math.abs(br.vx);
+        } else if (br.x > hi) {
+          br.x = hi;
+          br.vx = -Math.abs(br.vx);
+        }
+      } else if (br.kind === 'regen' && br.regen > 0) {
+        br.regen -= dt;
+        if (br.regen <= 0 && br.hp < br.maxHp) {
+          br.hp += 1;
+          br.flash = 0.6;
+          if (br.hp < br.maxHp) br.regen = REGEN_DELAY;
+        }
+      }
+    }
   }
 
   private igniteBlaze(): void {
@@ -499,11 +585,12 @@ export class BrickBounceGame implements GameModule {
         this.bolts.splice(bi, 1);
         continue;
       }
-      for (let i = this.bricks.length - 1; i >= 0; i -= 1) {
-        const br = this.bricks[i]!;
+      for (const br of this.bricks) {
+        if (br.dead) continue;
         if (aabbHit(bo.x, bo.y, 0.6, 1.6, br.x, br.y, br.hw, br.hh)) {
           this.bolts.splice(bi, 1);
-          this.damageBrick(i, br, 1);
+          this.hitBrick(br, 1);
+          this.sweepDead();
           break;
         }
       }
@@ -659,6 +746,7 @@ export class BrickBounceGame implements GameModule {
       stats: {
         level: this.level,
         bricks: this.bricksBroken,
+        chainKills: this.chainKills,
         blazes: this.blazes,
         levelsCleared: this.levelsCleared,
         powerups: this.powerupsTaken,
@@ -725,20 +813,44 @@ export class BrickBounceGame implements GameModule {
     Y: (y: number) => number,
     s: number,
   ): void {
+    const MARKER: Partial<Record<BrickKind, string>> = {
+      steel: '▦',
+      explosive: '✸',
+      mover: '↔',
+      regen: '✚',
+    };
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
     for (const br of this.bricks) {
-      const color = HP_COLORS[Math.min(br.hp - 1, HP_COLORS.length - 1)]!;
+      const hpColor = HP_COLORS[Math.min(br.hp - 1, HP_COLORS.length - 1)]!;
+      const color =
+        br.kind === 'steel' ? '#9aa6bf' : br.kind === 'explosive' ? '#ff7a5d' : hpColor;
       const x = X(br.x - br.hw);
       const y = Y(br.y - br.hh);
       const w = br.hw * 2 * s;
       const h = br.hh * 2 * s;
       g.fillStyle = color;
       g.shadowColor = color;
-      g.shadowBlur = 5;
+      g.shadowBlur = br.kind === 'explosive' ? 9 : 5;
       g.fillRect(x, y, w, h);
       g.shadowBlur = 0;
       // Inner highlight + flash on a non-lethal hit.
       g.fillStyle = br.flash > 0 ? `rgba(255,255,255,${0.2 + br.flash * 0.5})` : 'rgba(255,255,255,0.14)';
       g.fillRect(x, y, w, h * 0.32);
+      // Regen pending → green pulsing outline.
+      if (br.kind === 'regen' && br.regen > 0) {
+        const pulse = this.ctx.reducedMotion ? 0.6 : 0.4 + 0.3 * Math.sin(br.regen * 6);
+        g.strokeStyle = `rgba(157,255,176,${pulse})`;
+        g.lineWidth = Math.max(1, s * 0.5);
+        g.strokeRect(x + 1, y + 1, w - 2, h - 2);
+      }
+      // Kind marker glyph.
+      const marker = MARKER[br.kind];
+      if (marker) {
+        g.fillStyle = 'rgba(11,8,24,0.7)';
+        g.font = `bold ${Math.round(3 * s)}px monospace`;
+        g.fillText(marker, x + w / 2, y + h / 2 + 0.3 * s);
+      }
     }
   }
 

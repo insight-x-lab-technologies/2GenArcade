@@ -77,6 +77,8 @@ export const ptBR = {
     settingsHaptics: 'Vibração',
     settingsHapticsHint: 'Vibração tátil ao tocar nos controles e botões.',
     settingsHapticsUnsupported: 'Seu aparelho não oferece vibração — esta opção não terá efeito.',
+    settingsClickSound: 'Som de clique',
+    settingsClickSoundHint: 'Toca um clique curto ao pressionar os controles e botões (segue o volume de efeitos e o mudo).',
     settingsControl: 'Controle',
     settingsControl_dpad: 'Botões (direcional)',
     settingsControl_dpad_hint: 'A cruz clássica de quatro setas.',
@@ -282,7 +284,7 @@ export const ptBR = {
       dash: 'Esquiva',
     },
     howToPlay:
-      'Use o direcional (ou as setas) para costurar o trânsito: esquerda/direita pilotam, segure cima para acelerar e baixo para frear. Passe raspando nos veículos (moto, carro, caminhão, jamanta) para encher o Combustão — quando enche, toque no botão Nitro para dispará-lo (velocidade e pontos extras, travessia). O botão de esquiva dá uma arrancada lateral rápida na direção que você estiver segurando — ótimo para desviar de uma batida, mesmo na chuva ou no barro. Pegue power-ups para vantagens temporárias. A pista muda de terreno (asfalto, chuva, barro, neve), alterando velocidade e aderência, e o ciclo dia→tarde→noite muda a visibilidade. Bater no trânsito encerra a corrida.',
+      'Use o direcional (ou as setas) para costurar o trânsito: esquerda/direita pilotam, segure cima para acelerar e baixo para frear. Passe raspando nos veículos (moto, carro, caminhão, jamanta) para encher o Combustão — quando enche, toque no botão Nitro para dispará-lo (velocidade e pontos extras, travessia). O botão de esquiva dá uma arrancada lateral rápida na direção que você estiver segurando — ótimo para desviar de uma batida, mesmo na chuva ou no barro. Pegue power-ups para vantagens temporárias. Cuidado com os veículos na contramão (faróis brancos vindo na sua direção, bem rápidos) — passar raspando neles vale o dobro; e com as manchas de óleo, que não batem mas fazem o carro derrapar por um instante (os Pneus de Corrida ignoram). A pista muda de terreno (asfalto, chuva, barro, neve), alterando velocidade e aderência, e o ciclo dia→tarde→noite muda a visibilidade. Bater no trânsito encerra a corrida.',
     terrains: {
       asphalt: 'Asfalto',
       rain: 'Chuva',
@@ -338,6 +340,10 @@ export const ptBR = {
         name: 'Caçador de jamantas',
         description: 'Ultrapasse 20 veículos grandes (caminhão/jamanta) em uma corrida.',
       },
+      daredevil: {
+        name: 'Contramão',
+        description: 'Passe raspando em 15 veículos na contramão em uma corrida.',
+      },
     },
   },
   starDefender: {
@@ -386,7 +392,7 @@ export const ptBR = {
       bonus: 'Bônus +500',
     },
     howToPlay:
-      'Use o direcional (ou as setas) para mover a raquete e toque em cima para lançar a bola — uma linha de mira mostra o ângulo do saque (mova a raquete para ajustar). Rebata a bola para quebrar todos os blocos — os de trás aguentam mais batidas. Limpar a parede avança para uma fase mais rápida e resistente. Cada batida enche a Chama; quando enche, toque no botão Bola de fogo para acendê-la: ela atravessa os blocos e vale o dobro por alguns segundos. Blocos podem soltar power-ups: pegue-os com a raquete. Você tem 3 vidas — perde uma se deixar a última bola cair.',
+      'Use o direcional (ou as setas) para mover a raquete e toque em cima para lançar a bola — uma linha de mira mostra o ângulo do saque (mova a raquete para ajustar). Rebata a bola para quebrar todos os blocos — os de trás aguentam mais batidas. A partir da fase 2 surgem blocos especiais: explosivos 💥 (estouram os vizinhos em cadeia), de aço (indestrutíveis — só ricocheteiam, até a bola de fogo), móveis (deslizam de lado) e regenerativos (recuperam vida se você não terminar o serviço). Limpar a parede avança para uma fase mais rápida e resistente. Cada batida enche a Chama; quando enche, toque no botão Bola de fogo para acendê-la: ela atravessa os blocos e vale o dobro por alguns segundos. Blocos podem soltar power-ups: pegue-os com a raquete. Você tem 3 vidas — perde uma se deixar a última bola cair.',
     trophies: {
       firstBrick: { name: 'Primeira batida', description: 'Quebre seu primeiro bloco.' },
       demolisher: { name: 'Demolidor', description: 'Quebre 100 blocos em uma partida.' },
@@ -395,6 +401,7 @@ export const ptBR = {
       clearOut: { name: 'Faxina', description: 'Limpe uma parede inteira de blocos.' },
       veteran: { name: 'Veterano', description: 'Chegue à fase 5.' },
       magpie: { name: 'Colecionador', description: 'Pegue 10 power-ups em uma partida.' },
+      chainReaction: { name: 'Reação em cadeia', description: 'Destrua 20 blocos com explosões em uma partida.' },
       legend: { name: 'Lenda do fliperama', description: 'Faça 10.000 pontos.' },
     },
   },

@@ -12,6 +12,7 @@ const TROPHIES: Array<[string, string, TrophyCondition]> = [
   ['clearOut', '🧹', (c) => stat('levelsCleared')(c) >= 1],
   ['veteran', '🛡️', (c) => stat('level')(c) >= 5],
   ['magpie', '🎁', (c) => stat('powerups')(c) >= 10],
+  ['chainReaction', '💣', (c) => stat('chainKills')(c) >= 20],
   ['legend', '👑', (c) => c.score >= 10000],
 ];
 

@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { ActionButtonDef } from '@/types';
-import { vibrate } from '@/lib';
+import { playClick, vibrate } from '@/lib';
 import { cn } from './cn';
 
 interface ActionButtonsProps {
@@ -30,6 +30,7 @@ export function ActionButtons({ buttons, label, onButton }: ActionButtonsProps) 
     e.preventDefault();
     e.stopPropagation();
     vibrate('press');
+    playClick();
     onButton(id, 'press');
   };
   const release = (id: string) => (e: ReactPointerEvent) => {

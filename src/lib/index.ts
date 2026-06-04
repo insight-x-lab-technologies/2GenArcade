@@ -32,3 +32,4 @@ export {
   vibrate,
   type HapticPattern,
 } from './haptics';
+export { setUiSoundEnabled, playClick } from './uiSound';

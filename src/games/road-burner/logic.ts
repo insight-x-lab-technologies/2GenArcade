@@ -270,6 +270,30 @@ export const SWEEP_SPAWN_PAUSE = 2.5; // seconds of clear road after a Sweep
 export const POWERUP_HW = 3;
 export const POWERUP_HH = 3;
 
+// --- Oncoming traffic (D.2) ----------------------------------------------------
+// Vehicles in the opposing direction rush downward at a high closing speed.
+// Held back early so the opening stays fair, then ramps up with distance.
+export const ONCOMING_MIN_DISTANCE = 1400;
+export const ONCOMING_SPEED_MIN = 30;
+export const ONCOMING_SPEED_MAX = 52;
+
+/** Probability a freshly spawned vehicle is oncoming, ramping with distance. */
+export const oncomingChance = (distance: number): number =>
+  distance < ONCOMING_MIN_DISTANCE
+    ? 0
+    : Math.min(0.34, (distance - ONCOMING_MIN_DISTANCE) * 0.00006);
+
+// --- Road hazards (D.2) --------------------------------------------------------
+// Oil/water slicks don't crash you, but kill grip for a moment so you skid.
+// The Grip power-up shrugs them off. Kept off the opening stretch.
+export const SLICK_HW = 5;
+export const SLICK_HH = 4;
+export const SLICK_GRIP = 0.3; // grip forced this low while skidding
+export const SKID_DURATION = 1.1; // seconds of reduced grip after touching a slick
+export const SLICK_MIN_DISTANCE = 700;
+export const SLICK_MIN_GAP = 4.5; // seconds between slick spawns
+export const SLICK_VAR = 5;
+
 /** Uniform pick of a power-up from a [0,1) random. Pure for testability. */
 export const pickPowerKind = (rand: number): PowerKind =>
   POWER_KINDS[Math.min(POWER_KINDS.length - 1, Math.floor(clamp(rand, 0, 0.999999) * POWER_KINDS.length))]!;

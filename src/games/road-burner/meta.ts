@@ -44,6 +44,8 @@ const TROPHIES: Array<[string, string, TrophyCondition]> = [
   ['nightrider', '🌙', (c) => stat('night')(c) >= 1],
   // Big vehicles.
   ['trucker', '🚚', (c) => stat('bigPasses')(c) >= 20],
+  // Oncoming traffic (D.2).
+  ['daredevil', '😎', (c) => stat('oncomingPasses')(c) >= 15],
 ];
 
 const trophies: TrophyDef[] = TROPHIES.map(([id, icon, condition]) => ({

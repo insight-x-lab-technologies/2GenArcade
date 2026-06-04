@@ -20,6 +20,9 @@ import {
   NITRO_DURATION,
   NITRO_SPEED_BONUS,
   NUM_LANES,
+  ONCOMING_SPEED_MAX,
+  ONCOMING_SPEED_MIN,
+  oncomingChance,
   PASS_BONUS,
   pickPowerKind,
   pickVehicleKind,
@@ -30,6 +33,13 @@ import {
   POWERUP_HW,
   roadAt,
   scoreFromDistance,
+  SKID_DURATION,
+  SLICK_GRIP,
+  SLICK_HH,
+  SLICK_HW,
+  SLICK_MIN_DISTANCE,
+  SLICK_MIN_GAP,
+  SLICK_VAR,
   SLOWMO_FACTOR,
   speedFor,
   STEER_TARGET,
@@ -63,10 +73,16 @@ interface Vehicle {
   hh: number;
   color: string;
   big: boolean;
+  oncoming: boolean;
   nearLogged: boolean;
 }
 interface PowerUp {
   kind: PowerKind;
+  lane: number;
+  y: number;
+  prevY: number;
+}
+interface Slick {
   lane: number;
   y: number;
   prevY: number;
@@ -168,11 +184,14 @@ export class RoadBurnerGame implements GameModule {
 
   private cars: Vehicle[] = [];
   private powerups: PowerUp[] = [];
+  private slicks: Slick[] = [];
   private sparks: Spark[] = [];
   private motes: Mote[] = [];
 
   private spawnTimer = 0.8;
   private powerTimer = 3;
+  private slickTimer = 4;
+  private skid = 0;
   private spawnSuppress = 0;
 
   private burn = 0;
@@ -189,6 +208,7 @@ export class RoadBurnerGame implements GameModule {
   private bonus = 0;
   private passes = 0;
   private bigPasses = 0;
+  private oncomingPasses = 0;
   private nitros = 0;
   private powerupsCollected = 0;
   private usedKinds = new Set<PowerKind>();
@@ -233,9 +253,12 @@ export class RoadBurnerGame implements GameModule {
     this.prevDistance = 0;
     this.cars = [];
     this.powerups = [];
+    this.slicks = [];
     this.sparks = [];
     this.spawnTimer = 0.8;
     this.powerTimer = 3;
+    this.slickTimer = 4;
+    this.skid = 0;
     this.spawnSuppress = 0;
     this.burn = 0;
     this.nitro = false;
@@ -250,6 +273,7 @@ export class RoadBurnerGame implements GameModule {
     this.bonus = 0;
     this.passes = 0;
     this.bigPasses = 0;
+    this.oncomingPasses = 0;
     this.nitros = 0;
     this.powerupsCollected = 0;
     this.usedKinds = new Set();
@@ -301,6 +325,7 @@ export class RoadBurnerGame implements GameModule {
     this.prevDistance = this.distance;
     for (const c of this.cars) c.prevY = c.y;
     for (const p of this.powerups) p.prevY = p.y;
+    for (const sl of this.slicks) sl.prevY = sl.y;
 
     // Terrain + time of day (pure functions of distance).
     const ter = terrainAt(this.distance);
@@ -366,7 +391,9 @@ export class RoadBurnerGame implements GameModule {
       this.dashCd = DASH_COOLDOWN;
       this.ctx.audio.playSfx('dash');
     }
-    const grip = this.active('grip') ? 1 : terrain.grip;
+    // A fresh slick skid forces grip low for a moment (unless Grip is active).
+    let grip = this.active('grip') ? 1 : terrain.grip;
+    if (this.skid > 0 && !this.active('grip')) grip = Math.min(grip, SLICK_GRIP);
     if (this.dashTimer > 0) {
       this.dashTimer -= dt;
       this.pvx = this.dashDir * DASH_SPEED;
@@ -389,6 +416,7 @@ export class RoadBurnerGame implements GameModule {
 
     this.spawnTraffic(dt);
     this.spawnPowerups(dt);
+    this.spawnSlicks(dt);
 
     const slow = this.active('slowmo') ? SLOWMO_FACTOR : 1;
     this.moveEntities(dt, speed, slow);
@@ -396,6 +424,7 @@ export class RoadBurnerGame implements GameModule {
 
     for (const k of POWER_KINDS) if (this.fx[k] > 0) this.fx[k] = Math.max(0, this.fx[k] - dt);
     if (this.spawnSuppress > 0) this.spawnSuppress -= dt;
+    if (this.skid > 0) this.skid = Math.max(0, this.skid - dt);
 
     this.updateWeather(dt, ter.id);
     this.updateSparks(dt);
@@ -439,16 +468,23 @@ export class RoadBurnerGame implements GameModule {
     }
     if (candidates.length === 0) return;
     const lane = candidates[Math.floor(Math.random() * candidates.length)]!;
+    // Oncoming traffic (D.2): rushes downward with a high closing speed. Modelled
+    // as a negative world speed so the shared movement maths "just works".
+    const oncoming = Math.random() < oncomingChance(this.distance);
+    const worldSpeed = oncoming
+      ? -(ONCOMING_SPEED_MIN + Math.random() * (ONCOMING_SPEED_MAX - ONCOMING_SPEED_MIN))
+      : spec.minSpeed + Math.random() * (spec.maxSpeed - spec.minSpeed);
     this.cars.push({
       kind,
       lane,
       y: -spec.hh - 2,
       prevY: -spec.hh - 2,
-      worldSpeed: spec.minSpeed + Math.random() * (spec.maxSpeed - spec.minSpeed),
+      worldSpeed,
       hw: spec.hw,
       hh: spec.hh,
-      color: TRAFFIC_COLORS[Math.floor(Math.random() * TRAFFIC_COLORS.length)]!,
+      color: oncoming ? '#ff5d73' : TRAFFIC_COLORS[Math.floor(Math.random() * TRAFFIC_COLORS.length)]!,
       big: isBigVehicle(kind),
+      oncoming,
       nearLogged: false,
     });
   }
@@ -468,11 +504,29 @@ export class RoadBurnerGame implements GameModule {
     this.powerups.push({ kind: pickPowerKind(Math.random()), lane, y: -6, prevY: -6 });
   }
 
+  private spawnSlicks(dt: number): void {
+    this.slickTimer -= dt;
+    if (this.slickTimer > 0) return;
+    this.slickTimer = SLICK_MIN_GAP + Math.random() * SLICK_VAR;
+    if (this.distance < SLICK_MIN_DISTANCE) return;
+    const candidates: number[] = [];
+    for (let l = 0; l < NUM_LANES; l += 1) {
+      const carNear = this.cars.some((c) => c.lane === l && c.y < 26);
+      const slickNear = this.slicks.some((s) => s.lane === l && s.y < 30);
+      if (!carNear && !slickNear) candidates.push(l);
+    }
+    if (candidates.length === 0) return;
+    const lane = candidates[Math.floor(Math.random() * candidates.length)]!;
+    this.slicks.push({ lane, y: -SLICK_HH, prevY: -SLICK_HH });
+  }
+
   private moveEntities(dt: number, speed: number, slow: number): void {
     for (const c of this.cars) c.y += (speed - c.worldSpeed) * slow * dt;
     this.cars = this.cars.filter((c) => c.y < FIELD_H + 22 && c.y > -60);
     for (const p of this.powerups) p.y += speed * slow * dt;
     this.powerups = this.powerups.filter((p) => p.y < FIELD_H + 10);
+    for (const sl of this.slicks) sl.y += speed * slow * dt;
+    this.slicks = this.slicks.filter((sl) => sl.y < FIELD_H + SLICK_HH);
   }
 
   private resolve(phw: number, phh: number): void {
@@ -494,11 +548,30 @@ export class RoadBurnerGame implements GameModule {
         c.nearLogged = true;
         this.passes += 1;
         if (c.big) this.bigPasses += 1;
-        this.bonus += PASS_BONUS;
-        if (!this.nitro) this.burn = Math.min(BURN_MAX, this.burn + BURN_PER_PASS);
-        this.setFlash('#ffd27a', 0.18);
+        if (c.oncoming) {
+          this.oncomingPasses += 1;
+          this.award('daredevil');
+        }
+        // Threading an oncoming car is hairier → a bigger Burn/score reward.
+        this.bonus += c.oncoming ? PASS_BONUS * 2 : PASS_BONUS;
+        if (!this.nitro) {
+          this.burn = Math.min(BURN_MAX, this.burn + BURN_PER_PASS * (c.oncoming ? 1.5 : 1));
+        }
+        this.setFlash(c.oncoming ? '#ff5d73' : '#ffd27a', 0.18);
         this.ctx.audio.playSfx('pass');
         this.award('firstPass');
+      }
+    }
+
+    // Slicks don't crash you, but touching one makes the car skid for a moment.
+    for (const sl of this.slicks) {
+      const sx = this.laneX(this.distance, sl.y, sl.lane);
+      if (aabbHit(this.px, PLAYER_Y, phw, phh, sx, sl.y, SLICK_HW, SLICK_HH)) {
+        if (this.skid <= 0 && !this.active('grip')) {
+          this.ctx.audio.playSfx('dash');
+          this.setFlash('#7ea6ff', 0.16);
+        }
+        this.skid = SKID_DURATION;
       }
     }
 
@@ -602,6 +675,7 @@ export class RoadBurnerGame implements GameModule {
         distance: Math.floor(this.distance),
         passes: this.passes,
         bigPasses: this.bigPasses,
+        oncomingPasses: this.oncomingPasses,
         nitros: this.nitros,
         powerups: this.powerupsCollected,
         usedShield: this.usedKinds.has('shield') ? 1 : 0,
@@ -645,6 +719,7 @@ export class RoadBurnerGame implements GameModule {
     g.fillRect(0, 0, width, height);
 
     this.drawRoad(g, X, Y, s, dist, pal);
+    this.drawSlicks(g, X, Y, s, alpha, dist);
     this.drawPowerups(g, X, Y, s, alpha, dist);
     this.drawCars(g, X, Y, s, alpha, dist, night);
     this.drawSparks(g, X, Y, s);
@@ -792,8 +867,21 @@ export class RoadBurnerGame implements GameModule {
       g.fillRect(x + w * 0.2, y + h * 0.66, w * 0.6, h * 0.2);
     }
 
-    // Brake lights glow at the rear (bottom) at night.
-    if (night > 0.45) {
+    if (c.oncoming) {
+      // Oncoming: bright white headlights at the front (bottom, facing you), lit
+      // at all times so the threat reads instantly. A red roof bar reinforces it.
+      g.fillStyle = '#fffbe6';
+      g.shadowColor = '#fff3b0';
+      g.shadowBlur = 9;
+      const lw = w * 0.2;
+      const lh = Math.max(s * 1.4, h * 0.08);
+      g.fillRect(x + w * 0.12, y + h - lh, lw, lh);
+      g.fillRect(x + w * 0.68, y + h - lh, lw, lh);
+      g.shadowBlur = 0;
+      g.fillStyle = '#ff3b30';
+      g.fillRect(x + w * 0.2, y, w * 0.6, Math.max(s, h * 0.08));
+    } else if (night > 0.45) {
+      // Brake lights glow at the rear (bottom) at night.
       g.fillStyle = '#ff3b30';
       g.shadowColor = '#ff3b30';
       g.shadowBlur = 6;
@@ -817,6 +905,34 @@ export class RoadBurnerGame implements GameModule {
     for (const c of this.cars) {
       const y = lerp(c.prevY, c.y, alpha);
       this.drawVehicle(g, c, X(this.laneX(dist, y, c.lane)), Y(y), s, night);
+    }
+  }
+
+  private drawSlicks(
+    g: CanvasRenderingContext2D,
+    X: (x: number) => number,
+    Y: (y: number) => number,
+    s: number,
+    alpha: number,
+    dist: number,
+  ): void {
+    for (const sl of this.slicks) {
+      const y = lerp(sl.prevY, sl.y, alpha);
+      const cx = X(this.laneX(dist, y, sl.lane));
+      const cy = Y(y);
+      g.save();
+      g.translate(cx, cy);
+      g.scale(1, 0.55); // flatten into a road-hugging puddle
+      g.fillStyle = 'rgba(20,28,48,0.7)';
+      g.beginPath();
+      g.arc(0, 0, SLICK_HW * s, 0, Math.PI * 2);
+      g.fill();
+      // Oily sheen highlight.
+      g.fillStyle = 'rgba(126,166,255,0.25)';
+      g.beginPath();
+      g.arc(-SLICK_HW * s * 0.25, -SLICK_HW * s * 0.2, SLICK_HW * s * 0.5, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
     }
   }
 
