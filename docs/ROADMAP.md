@@ -54,7 +54,7 @@ Snake Coil (C.1), Brick Bounce (F.1) e jogos planejados (Cannon Duel, Bug Blaste
   com uma paleta de padrões por evento (acerto, dano, level-up). Mesma filosofia do
   áudio declarativo.
 
-### A3. Reiniciar dentro do jogo (pause + game over) — `P1` · `S`
+### A3. Reiniciar dentro do jogo (pause + game over) — `P1` · `S` — ✅ FEITO (2026-06-04, botão Reiniciar no pause)
 **Esclarecimento:** *"Jogar de novo" já existe e funciona* — botão em
 `GameOverScreen.tsx:90`, e o `GameHost` remonta limpo via `sessionKey`
 (`App.tsx:147`). O que falta:
@@ -162,11 +162,11 @@ score por distância.
 ondas, 5 troféus, score por pontos. É o jogo **mais raso** em sistemas (sem
 power-ups, ao contrário de River Run/Road Burner).
 
-### E.1. Tiro manual + segunda arma — `P1` · `M` (depende de A1; reusa B1)
+### E.1. Tiro manual + segunda arma — `P1` · `M` (depende de A1; reusa B1) — ✅ FEITO (2026-06-04, tiro manual; 2ª arma = barragem Nova)
 - Mesma infra do River Run: tiro manual opcional + arma secundária
   (ex.: spread/carregado). Bom candidato a compartilhar código com B1.
 
-### E.2. Nova manual (botão de bomba) — `P1` · `S` (depende de A1)
+### E.2. Nova manual (botão de bomba) — `P1` · `S` (depende de A1) — ✅ FEITO (2026-06-04)
 - Acionar o Nova como "smart bomb" no momento certo, em vez de automático.
 
 ### E.3. Sistema de power-ups + chefes — `P1` · `L`

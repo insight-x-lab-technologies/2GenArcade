@@ -38,6 +38,7 @@ export const en: AppResources = {
     detailGoToStore: 'See in Store',
     gameplayPaused: 'Paused',
     gameplayResume: 'Resume',
+    gameplayRestart: 'Restart',
     gameplayQuit: 'Quit',
     gameplayPause: 'Pause',
     gameplayScore: 'Score',
@@ -333,8 +334,12 @@ export const en: AppResources = {
     hudReady: 'Nova ready',
     hudNova: 'Nova',
     waveBanner: 'Wave {{wave}}',
+    controls: {
+      fire: 'Fire (hold)',
+      nova: 'Nova',
+    },
     howToPlay:
-      'Use the d-pad (or arrow keys) to move the ship: left/right steer. Fire is automatic. Destroy the wraiths before they reach the bottom and dodge their shots. Each kill charges the Nova; when it is full, hold up to unleash it — a few seconds of triple fire, double points and a clean sweep of enemy fire. You have 3 lives.',
+      'Use the d-pad (or arrow keys) to move the ship: left/right steer. Hold the fire button to shoot (it is no longer automatic). Destroy the wraiths before they reach the bottom and dodge their shots. Each kill charges the Nova; when it is full, tap the Nova button to unleash it — a few seconds of automatic triple barrage, double points and a clean sweep of enemy fire. You have 3 lives.',
     trophies: {
       firstBlood: { name: 'First blood', description: 'Destroy your first wraith.' },
       vanguard: { name: 'Vanguard', description: 'Reach wave 3.' },

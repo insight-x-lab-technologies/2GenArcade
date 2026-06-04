@@ -65,13 +65,15 @@ try {
   await sleep(800);
   log('canvas mounted');
 
-  // Strafe right and back to blast the formation (auto-fire is on).
+  // Hold fire (manual now) and strafe right and back to blast the formation.
+  await page.keyboard.down('KeyJ');
   await page.keyboard.down('ArrowRight');
   await sleep(500);
   await page.keyboard.up('ArrowRight');
   await page.keyboard.down('ArrowLeft');
   await sleep(500);
   await page.keyboard.up('ArrowLeft');
+  await page.keyboard.press('KeyK'); // tap Nova (fires once charged)
 
   const painted = await page.evaluate(() => {
     const c = document.querySelector('canvas');

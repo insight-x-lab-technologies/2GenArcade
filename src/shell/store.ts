@@ -81,6 +81,8 @@ interface ArcadeState {
   backendConfigured: boolean;
 
   history: Route[];
+  /** Bumped to force the current game to remount (in-game restart). */
+  playNonce: number;
   settings: Settings;
   nickname: string;
   entitledPacks: string[];
@@ -92,6 +94,8 @@ interface ArcadeState {
   init(): Promise<void>;
   navigate(route: Route): void;
   back(): void;
+  /** Restart the current run in place (remounts the game host). */
+  restartGame(): void;
   unlockAudio(): Promise<void>;
 
   setMusicVolume(v: number): void;
@@ -125,6 +129,7 @@ export const useArcadeStore = create<ArcadeState>((set, get) => ({
   backendConfigured: isSupabaseConfigured,
 
   history: [{ name: 'splash' }],
+  playNonce: 0,
   settings: DEFAULT_SETTINGS,
   nickname: '',
   entitledPacks: [...FREE_PACK_IDS],
@@ -174,6 +179,10 @@ export const useArcadeStore = create<ArcadeState>((set, get) => ({
 
   back() {
     set((s) => (s.history.length > 1 ? { history: s.history.slice(0, -1) } : s));
+  },
+
+  restartGame() {
+    set((s) => ({ playNonce: s.playNonce + 1 }));
   },
 
   async unlockAudio() {

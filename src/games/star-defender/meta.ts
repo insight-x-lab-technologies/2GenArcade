@@ -9,6 +9,10 @@ export const starDefenderMeta: GameMeta = {
   scoreType: 'points',
   scoreIsEndless: true,
   controlScheme: 'dpad',
+  actionButtons: [
+    { id: 'fire', labelKey: 'starDefender:controls.fire', glyph: '⦿', accent: 'amber', mode: 'hold' },
+    { id: 'nova', labelKey: 'starDefender:controls.nova', glyph: '✸', accent: 'violet', mode: 'tap' },
+  ],
   howToPlayKey: 'starDefender:howToPlay',
   thumbnail: '👾',
   trophies: [

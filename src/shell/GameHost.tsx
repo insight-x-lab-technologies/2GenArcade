@@ -60,6 +60,7 @@ export function GameHost({ game, onExit }: GameHostProps) {
   const reducedMotion = useArcadeStore((s) => s.reducedMotion);
   const handleGameOver = useArcadeStore((s) => s.handleGameOver);
   const navigate = useArcadeStore((s) => s.navigate);
+  const restartGame = useArcadeStore((s) => s.restartGame);
   const showToast = useArcadeStore((s) => s.showToast);
   const refreshTrophies = useArcadeStore((s) => s.refreshTrophies);
 
@@ -323,6 +324,9 @@ export function GameHost({ game, onExit }: GameHostProps) {
             <h2 className="font-display text-lg text-neon-amber">{t('gameplayPaused')}</h2>
             <ArcadeButton block onClick={doResume}>
               {t('gameplayResume')}
+            </ArcadeButton>
+            <ArcadeButton block variant="outline" accent="violet" onClick={restartGame}>
+              ↻ {t('gameplayRestart')}
             </ArcadeButton>
             <ArcadeButton block variant="outline" accent="coral" onClick={onExit}>
               {t('gameplayQuit')}

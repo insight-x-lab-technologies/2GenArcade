@@ -17,6 +17,7 @@ const stubCtx2d = () => {
 function makeContext() {
   const events: Array<{ type: keyof GameEventMap; payload: unknown }> = [];
   const held = new Set<Direction>();
+  const heldButtons = new Set<string>();
   const canvas = { getContext: () => stubCtx2d() } as unknown as HTMLCanvasElement;
 
   const ctx: GameContext = {
@@ -24,7 +25,7 @@ function makeContext() {
     input: {
       subscribe: () => () => undefined,
       isHeld: (d) => held.has(d),
-      isButtonHeld: () => false,
+      isButtonHeld: (id) => heldButtons.has(id),
     },
     audio: { playMusic: vi.fn(), stopMusic: vi.fn(), playSfx: vi.fn() },
     storage: { get: (_k, fb) => fb, set: () => undefined, remove: () => undefined },
@@ -34,7 +35,7 @@ function makeContext() {
     viewport: { width: 360, height: 640 },
   };
 
-  return { ctx, events, held };
+  return { ctx, events, held, heldButtons };
 }
 
 describe('StarDefenderGame (integration)', () => {
@@ -47,11 +48,12 @@ describe('StarDefenderGame (integration)', () => {
     game.destroy();
   });
 
-  it('moves, auto-fires and renders mid-tick without throwing', () => {
-    const { ctx, held } = makeContext();
+  it('moves, fires (button held) and renders mid-tick without throwing', () => {
+    const { ctx, held, heldButtons } = makeContext();
     const game = new StarDefenderGame();
     game.init(ctx);
     held.add('right');
+    heldButtons.add('fire');
     expect(() => {
       for (let i = 0; i < 40; i += 1) game.update(1 / 60);
       game.render(0.5);
@@ -59,11 +61,12 @@ describe('StarDefenderGame (integration)', () => {
     game.destroy();
   });
 
-  it('destroys wraiths and awards first blood while auto-firing', () => {
-    const { ctx, events } = makeContext();
+  it('destroys wraiths and awards first blood while the fire button is held', () => {
+    const { ctx, events, heldButtons } = makeContext();
     const game = new StarDefenderGame();
     game.init(ctx);
-    // Cruise at centre: auto-fire eventually destroys the column overhead.
+    // Cruise at centre holding fire: shots eventually destroy the column overhead.
+    heldButtons.add('fire');
     for (let i = 0; i < 600; i += 1) game.update(1 / 60);
     const t = events.find(
       (e) => e.type === 'trophy' && (e.payload as GameEventMap['trophy']).trophyId === 'firstBlood',

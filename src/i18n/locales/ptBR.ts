@@ -36,6 +36,7 @@ export const ptBR = {
     detailGoToStore: 'Ver na Loja',
     gameplayPaused: 'Pausado',
     gameplayResume: 'Continuar',
+    gameplayRestart: 'Reiniciar',
     gameplayQuit: 'Sair',
     gameplayPause: 'Pausar',
     gameplayScore: 'Pontos',
@@ -331,8 +332,12 @@ export const ptBR = {
     hudReady: 'Nova pronta',
     hudNova: 'Nova',
     waveBanner: 'Onda {{wave}}',
+    controls: {
+      fire: 'Atirar (segure)',
+      nova: 'Nova',
+    },
     howToPlay:
-      'Use o direcional (ou as setas) para mover a nave: esquerda/direita pilotam. O tiro é automático. Destrua os wraiths antes que cheguem embaixo e desvie dos tiros deles. Cada abate enche a Carga; quando estiver cheia, segure cima para disparar a Nova — alguns segundos de tiro triplo, pontos em dobro e a tela limpa de tiros inimigos. Você tem 3 vidas.',
+      'Use o direcional (ou as setas) para mover a nave: esquerda/direita pilotam. Segure o botão de tiro para atirar (não é mais automático). Destrua os wraiths antes que cheguem embaixo e desvie dos tiros deles. Cada abate enche a Carga; quando estiver cheia, toque no botão Nova para disparar — alguns segundos de barragem tripla automática, pontos em dobro e a tela limpa de tiros inimigos. Você tem 3 vidas.',
     trophies: {
       firstBlood: { name: 'Primeiro abate', description: 'Destrua seu primeiro wraith.' },
       vanguard: { name: 'Vanguarda', description: 'Chegue à onda 3.' },

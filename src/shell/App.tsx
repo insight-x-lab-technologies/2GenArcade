@@ -22,6 +22,7 @@ export function App() {
   const init = useArcadeStore((s) => s.init);
   const route = useArcadeStore(selectCurrentRoute);
   const history = useArcadeStore((s) => s.history);
+  const playNonce = useArcadeStore((s) => s.playNonce);
   const back = useArcadeStore((s) => s.back);
   const crtEnabled = useArcadeStore((s) => s.settings.crtEnabled);
   const audioUnlocked = useArcadeStore((s) => s.audioUnlocked);
@@ -69,7 +70,11 @@ export function App() {
       case 'detail':
         return route.gameId ? <GameDetailScreen gameId={route.gameId} /> : <HomeScreen />;
       case 'play':
-        return route.gameId ? <PlayRoute gameId={route.gameId} sessionKey={history.length} onExit={back} /> : <HomeScreen />;
+        return route.gameId ? (
+          <PlayRoute gameId={route.gameId} sessionKey={`${history.length}-${playNonce}`} onExit={back} />
+        ) : (
+          <HomeScreen />
+        );
       case 'gameover':
         return route.gameId ? <GameOverScreen gameId={route.gameId} /> : <HomeScreen />;
       case 'store':
@@ -139,7 +144,7 @@ function PlayRoute({
   onExit,
 }: {
   gameId: string;
-  sessionKey: number;
+  sessionKey: string;
   onExit: () => void;
 }) {
   const game = getCatalogGame(gameId);

@@ -107,7 +107,7 @@ export class StarDefenderGame implements GameModule {
   private charge = 0;
   private nova = false;
   private novaTime = 0;
-  private upHeldPrev = false;
+  private novaHeldPrev = false;
 
   private score = 0;
   private kills = 0;
@@ -146,7 +146,7 @@ export class StarDefenderGame implements GameModule {
     this.charge = 0;
     this.nova = false;
     this.novaTime = 0;
-    this.upHeldPrev = false;
+    this.novaHeldPrev = false;
     this.score = 0;
     this.kills = 0;
     this.novas = 0;
@@ -219,12 +219,12 @@ export class StarDefenderGame implements GameModule {
     const sdir = (input.isHeld('right') ? 1 : 0) - (input.isHeld('left') ? 1 : 0);
     this.px = clamp(this.px + sdir * PLAYER_SPEED * dt, PLAYER_HW, FIELD_W - PLAYER_HW);
 
-    // Nova trigger (rising edge on up, when charged).
-    const up = input.isHeld('up');
-    if (up && !this.upHeldPrev && !this.nova && this.charge >= CHARGE_MAX) {
+    // Nova trigger (rising edge on the nova button, when charged).
+    const novaHeld = input.isButtonHeld('nova');
+    if (novaHeld && !this.novaHeldPrev && !this.nova && this.charge >= CHARGE_MAX) {
       this.triggerNova();
     }
-    this.upHeldPrev = up;
+    this.novaHeldPrev = novaHeld;
 
     if (this.nova) {
       this.novaTime -= dt;
@@ -235,7 +235,7 @@ export class StarDefenderGame implements GameModule {
       }
     }
 
-    this.autoFire(dt);
+    this.fireWeapons(dt);
     this.moveBullets(dt);
 
     // Between waves: short breather, then the next (harder) wave.
@@ -279,20 +279,27 @@ export class StarDefenderGame implements GameModule {
     }
   }
 
-  private autoFire(dt: number): void {
+  private fireWeapons(dt: number): void {
     this.fireTimer -= dt;
-    if (this.fireTimer > 0) return;
     const y = PLAYER_Y - PLAYER_HH;
+    // While Nova is active the ship auto-barrages a spread; otherwise the player
+    // holds the fire button to shoot (parked at 0 so the next press is instant).
     if (this.nova) {
+      if (this.fireTimer > 0) return;
       for (const vx of [-NOVA_SPREAD, 0, NOVA_SPREAD]) {
         this.bullets.push({ x: this.px, y, prevX: this.px, prevY: y, vx });
       }
       this.fireTimer = NOVA_FIRE_INTERVAL;
-    } else {
-      this.bullets.push({ x: this.px, y, prevX: this.px, prevY: y, vx: 0 });
-      this.fireTimer = FIRE_INTERVAL;
-      this.ctx.audio.playSfx('shoot');
+      return;
     }
+    if (!this.ctx.input.isButtonHeld('fire')) {
+      if (this.fireTimer < 0) this.fireTimer = 0;
+      return;
+    }
+    if (this.fireTimer > 0) return;
+    this.bullets.push({ x: this.px, y, prevX: this.px, prevY: y, vx: 0 });
+    this.fireTimer = FIRE_INTERVAL;
+    this.ctx.audio.playSfx('shoot');
   }
 
   private moveBullets(dt: number): void {
