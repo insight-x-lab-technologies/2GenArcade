@@ -195,13 +195,14 @@ export const ptBR = {
       surge: 'Descarga',
     },
     howToPlay:
-      'Arraste ou use o direcional para virar a Espiral. Colete orbes para crescer e pontuar; encadeie orbes para somar combo. Orbes-prisma valem mais, mas duram pouco. Encher a Descarga deixa-a pronta — toque no botão Descarga para ativá-la e atravessar seu próprio corpo, dobrando os pontos por alguns segundos (guarde-a para quando estiver encurralado). Bater nas paredes ou em si mesmo encerra o jogo.',
+      'Arraste ou use o direcional para virar a Espiral. Colete orbes para crescer e pontuar; encadeie orbes para somar combo. Orbes-prisma valem mais, mas duram pouco. Encher a Descarga deixa-a pronta — toque no botão Descarga para ativá-la e atravessar seu próprio corpo, dobrando os pontos por alguns segundos (guarde-a para quando estiver encurralado). A partir do nível 3 surgem obstáculos: paredes vermelhas são fatais (a Descarga não atravessa) e ladrilhos azuis deixam a Espiral lenta por um instante. Bater nas paredes, nos obstáculos ou em si mesmo encerra o jogo.',
     trophies: {
       firstOrb: { name: 'Primeira faísca', description: 'Colete seu primeiro orbe.' },
       combo: { name: 'Em chamas', description: 'Alcance um combo de 5.' },
       surge: { name: 'Descarregado', description: 'Ative a Descarga uma vez.' },
       longCoil: { name: 'Espiral longa', description: 'Cresça até 25 de comprimento.' },
       highScore: { name: 'Lenda da grade', description: 'Faça 5.000 pontos.' },
+      pathfinder: { name: 'Desbravador', description: 'Coma 12 orbes com obstáculos no tabuleiro.' },
     },
   },
   riverRun: {
@@ -214,6 +215,7 @@ export const ptBR = {
     },
     howToPlay:
       'Use o direcional (ou as setas) para desviar pelo cânion: esquerda/direita pilotam, segure cima para o turbo e baixo para frear. Segure o botão de tiro para disparar (não é mais automático). O botão de míssil lança uma ogiva que explode em área e é bem mais forte — mas você tem poucos: eles se recarregam devagar e a ogiva "W" reabastece. Destrua naves de vários tamanhos (as grandes aguentam mais tiros e valem mais; algumas atiram em você mais adiante). Voe por cima dos tanques de combustível para reabastecer — mas cuidado: eles são destrutíveis e seu tiro pode estourá-los. Pegue power-ups para vantagens temporárias. O cenário muda (cidade, floresta, montanhas, oceano, espaço) e o dia vira tarde e noite. Ficar sem combustível, bater nas paredes ou ser atingido encerra o voo.',
+    bossWarning: 'Chefe à vista!',
     biomes: {
       city: 'Cidade',
       forest: 'Floresta',
@@ -256,6 +258,8 @@ export const ptBR = {
       collector: { name: 'Colecionador', description: 'Pegue um power-up.' },
       warmonger: { name: 'Belicista', description: 'Lance seu primeiro míssil.' },
       demolitionist: { name: 'Demolidor', description: 'Destrua 8 naves com mísseis em uma partida.' },
+      warlord: { name: 'Senhor da guerra', description: 'Derrote um chefe de bioma.' },
+      overlord: { name: 'Soberano', description: 'Derrote 5 chefes em uma partida.' },
       ironclad: { name: 'Couraçado', description: 'Use a Invencibilidade.' },
       lightspeed: { name: 'Velocidade da luz', description: 'Use a Super Velocidade.' },
       twinGuns: { name: 'Canhões gêmeos', description: 'Use o Tiro Duplo.' },

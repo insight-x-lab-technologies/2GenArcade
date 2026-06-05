@@ -102,6 +102,59 @@ export const placeOrb = (
 
 export const levelForOrbs = (orbs: number): number => 1 + Math.floor(orbs / ORBS_PER_LEVEL);
 
+// --- Hazards (C.2) --------------------------------------------------------------
+// The board gains variety as the Coil levels up: lethal internal WALLS and
+// non-lethal SLOW tiles. All placement is pure (a `rand` is injected) and avoids
+// the Coil, the orb and the cells just ahead of the head, so a fresh hazard can
+// never spawn an unavoidable trap. Below HAZARD_FROM_LEVEL the board is empty —
+// so the early game plays exactly as before.
+
+export const HAZARD_FROM_LEVEL = 3;
+/** Cells ahead of the head kept hazard-free when (re)placing obstacles. */
+export const HAZARD_SAFE_AHEAD = 4;
+/** Multiplies the tick interval while the head sits on a slow tile (>1 = slower). */
+export const SLOW_TILE_FACTOR = 1.7;
+/** Steps a slow tile keeps the Coil sluggish after the head leaves it. */
+export const SLOW_TILE_STEPS = 2;
+
+/** Lethal internal walls at a given level (none before HAZARD_FROM_LEVEL). */
+export const wallCountForLevel = (level: number): number =>
+  level < HAZARD_FROM_LEVEL ? 0 : Math.min(2 + (level - HAZARD_FROM_LEVEL), 8);
+
+/** Non-lethal slow tiles at a given level. */
+export const slowCountForLevel = (level: number): number =>
+  level < HAZARD_FROM_LEVEL ? 0 : Math.min(1 + Math.floor((level - HAZARD_FROM_LEVEL) / 2), 4);
+
+/** The cells the head would sweep over the next `n` steps going straight — kept
+ *  clear so newly placed hazards never land right in the Coil's path. */
+export const safetyZone = (head: Vec, dir: Dir, n: number): Vec[] => {
+  const cells: Vec[] = [];
+  let p = head;
+  for (let i = 0; i < n; i += 1) {
+    p = stepHead(p, dir);
+    cells.push(p);
+  }
+  return cells;
+};
+
+/** Pick `count` distinct free cells (not in `blocked`) for hazards. Pure. */
+export const placeHazards = (
+  count: number,
+  blocked: Vec[],
+  rand: () => number,
+  cols = COLS,
+  rows = ROWS,
+): Vec[] => {
+  const cells = freeCells(blocked, cols, rows);
+  const picked: Vec[] = [];
+  for (let i = 0; i < count && cells.length > 0; i += 1) {
+    const idx = Math.min(cells.length - 1, Math.floor(rand() * cells.length));
+    picked.push(cells[idx]!);
+    cells.splice(idx, 1);
+  }
+  return picked;
+};
+
 /** Grid tick (seconds per cell). Faster each level, floored so it stays fair. */
 export const tickInterval = (level: number): number =>
   Math.max(0.16 - (level - 1) * 0.012, 0.06);

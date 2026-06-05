@@ -3,6 +3,10 @@ import {
   BIOME_SEGMENT,
   biomeAt,
   biomeForSegment,
+  BOSS_MIN_INDEX,
+  bossDueForIndex,
+  bossHpForIndex,
+  bossRewardForIndex,
   channelAt,
   circleHit,
   DAY_LEG,
@@ -153,6 +157,25 @@ describe('enemies', () => {
 
   it('pickEnemyKind always returns a valid kind', () => {
     for (let r = 0; r < 1; r += 0.03) expect(ENEMY_KINDS).toContain(pickEnemyKind(2000, r));
+  });
+});
+
+describe('mini-boss (B2)', () => {
+  it('is due only when crossing into a new biome at/after the first transition', () => {
+    expect(bossDueForIndex(0, -1)).toBe(false); // city: no boss
+    expect(bossDueForIndex(BOSS_MIN_INDEX, -1)).toBe(true); // first transition
+    expect(bossDueForIndex(1, 1)).toBe(false); // already spawned for index 1
+    expect(bossDueForIndex(2, 1)).toBe(true); // next transition
+    expect(bossDueForIndex(2, 2)).toBe(false);
+  });
+
+  it('scales HP and reward up with each biome cleared', () => {
+    expect(bossHpForIndex(BOSS_MIN_INDEX)).toBe(30);
+    expect(bossHpForIndex(BOSS_MIN_INDEX + 1)).toBeGreaterThan(bossHpForIndex(BOSS_MIN_INDEX));
+    expect(bossRewardForIndex(BOSS_MIN_INDEX)).toBe(1500);
+    expect(bossRewardForIndex(BOSS_MIN_INDEX + 2)).toBeGreaterThan(
+      bossRewardForIndex(BOSS_MIN_INDEX),
+    );
   });
 });
 

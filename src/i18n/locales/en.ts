@@ -197,13 +197,14 @@ export const en: AppResources = {
       surge: 'Surge',
     },
     howToPlay:
-      'Swipe or use the d-pad to turn the Coil. Collect orbs to grow and score; chain orbs to build a combo. Prism orbs are worth more but expire fast. Filling Surge arms it — tap the Surge button to trigger it and phase through your own body, doubling points for a few seconds (save it for when you are boxed in). Hitting a wall or yourself ends the run.',
+      'Swipe or use the d-pad to turn the Coil. Collect orbs to grow and score; chain orbs to build a combo. Prism orbs are worth more but expire fast. Filling Surge arms it — tap the Surge button to trigger it and phase through your own body, doubling points for a few seconds (save it for when you are boxed in). From level 3 on, obstacles appear: red walls are lethal (Surge will not phase through them) and blue tiles slow the Coil for a moment. Hitting a wall, an obstacle, or yourself ends the run.',
     trophies: {
       firstOrb: { name: 'First spark', description: 'Collect your first orb.' },
       combo: { name: 'On fire', description: 'Reach a 5-orb combo.' },
       surge: { name: 'Surged', description: 'Trigger Surge once.' },
       longCoil: { name: 'Long coil', description: 'Grow to length 25.' },
       highScore: { name: 'Grid legend', description: 'Score 5,000 points.' },
+      pathfinder: { name: 'Pathfinder', description: 'Eat 12 orbs with obstacles on the board.' },
     },
   },
   riverRun: {
@@ -216,6 +217,7 @@ export const en: AppResources = {
     },
     howToPlay:
       'Use the d-pad (or arrow keys) to weave through the canyon: left/right steer, hold up to boost and down to brake. Hold the fire button to shoot (it is no longer automatic). The missile button launches a warhead that blasts an area and hits far harder — but you only carry a few: they recharge slowly and the "W" warhead pickup tops them up. Destroy ships of all sizes (big ones soak more hits and score more; some shoot back later on). Fly over fuel tanks to refuel — but careful: they are destructible and your own fire can pop them. Grab power-ups for temporary edges. The scenery changes (city, forest, mountains, ocean, space) and day turns to afternoon and night. Running out of fuel, hitting the walls, or getting shot ends the flight.',
+    bossWarning: 'Boss incoming!',
     biomes: {
       city: 'City',
       forest: 'Forest',
@@ -258,6 +260,8 @@ export const en: AppResources = {
       collector: { name: 'Collector', description: 'Grab a power-up.' },
       warmonger: { name: 'Warmonger', description: 'Launch your first missile.' },
       demolitionist: { name: 'Demolitionist', description: 'Destroy 8 ships with missiles in one run.' },
+      warlord: { name: 'Warlord', description: 'Defeat a biome boss.' },
+      overlord: { name: 'Overlord', description: 'Defeat 5 bosses in one run.' },
       ironclad: { name: 'Ironclad', description: 'Use Invincibility.' },
       lightspeed: { name: 'Lightspeed', description: 'Use Super Speed.' },
       twinGuns: { name: 'Twin guns', description: 'Use Double Shot.' },

@@ -5,20 +5,28 @@ import {
   advance,
   COLS,
   COMBO_WINDOW,
+  HAZARD_SAFE_AHEAD,
   hitsBody,
   hitsWall,
   initialSnake,
   isReverse,
+  key,
   levelForOrbs,
   orbGrowth,
   orbScore,
+  placeHazards,
   placeOrb,
   PRISM_EVERY,
   PRISM_LIFE,
   ROWS,
+  safetyZone,
+  SLOW_TILE_FACTOR,
+  SLOW_TILE_STEPS,
+  slowCountForLevel,
   SURGE_DURATION,
   SURGE_PER_ORB,
   tickInterval,
+  wallCountForLevel,
   type Dir,
   type OrbKind,
   type Vec,
@@ -40,6 +48,7 @@ const BODY_FROM = '#ff8c42'; // deep orange
 const BODY_TO = '#ff5d73'; // coral
 const SURGE_HEAD = '#bfffe9';
 const SURGE_BODY = '#46d4c4'; // teal
+const WALL_COLOR = '#ff4d6d'; // lethal internal wall (coral-red)
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
@@ -68,6 +77,14 @@ export class SnakeCoilGame implements GameModule {
   private orbKind: OrbKind = 'normal';
   private prismLife = 0;
   private orbsSpawned = 0;
+
+  // Hazards (C.2): lethal walls + non-lethal slow tiles, regenerated on level up.
+  private walls: Vec[] = [];
+  private slowTiles: Vec[] = [];
+  private wallSet = new Set<string>();
+  private slowSet = new Set<string>();
+  private slowSteps = 0;
+  private hazardOrbs = 0;
 
   private score = 0;
   private orbs = 0;
@@ -123,7 +140,34 @@ export class SnakeCoilGame implements GameModule {
     this.flash = 0;
     this.firstOrbAwarded = false;
     this.orbsSpawned = 0;
+    this.walls = [];
+    this.slowTiles = [];
+    this.wallSet = new Set();
+    this.slowSet = new Set();
+    this.slowSteps = 0;
+    this.hazardOrbs = 0;
     this.spawnOrb();
+    this.regenerateHazards();
+  }
+
+  /** Re-roll the hazard layout for the current level, keeping the Coil, the orb
+   *  and the cells just ahead of the head clear so nothing is an instant trap. */
+  private regenerateHazards(): void {
+    const wallCount = wallCountForLevel(this.level);
+    const slowCount = slowCountForLevel(this.level);
+    if (wallCount === 0 && slowCount === 0) {
+      this.walls = [];
+      this.slowTiles = [];
+      this.wallSet = new Set();
+      this.slowSet = new Set();
+      return;
+    }
+    const safe = safetyZone(this.body[0]!, this.dir, HAZARD_SAFE_AHEAD);
+    const blocked = [...this.body, this.orb, ...safe];
+    this.walls = placeHazards(wallCount, blocked, () => Math.random());
+    this.slowTiles = placeHazards(slowCount, [...blocked, ...this.walls], () => Math.random());
+    this.wallSet = new Set(this.walls.map(key));
+    this.slowSet = new Set(this.slowTiles.map(key));
   }
 
   // ---- Input ----------------------------------------------------------------
@@ -186,7 +230,9 @@ export class SnakeCoilGame implements GameModule {
 
   private currentInterval(): number {
     const base = tickInterval(this.level);
-    return this.surgeActive ? base * SURGE_SPEEDUP : base;
+    const surge = this.surgeActive ? SURGE_SPEEDUP : 1;
+    const slow = this.slowSteps > 0 ? SLOW_TILE_FACTOR : 1;
+    return base * surge * slow;
   }
 
   private step(): void {
@@ -195,6 +241,12 @@ export class SnakeCoilGame implements GameModule {
     const nextHead = advance(this.body, this.dir, false)[0]!;
 
     if (hitsWall(nextHead)) {
+      this.endGame();
+      return;
+    }
+    // Internal walls are lethal even while surging (Surge only phases through the
+    // Coil itself, not solid obstacles).
+    if (this.wallSet.has(key(nextHead))) {
       this.endGame();
       return;
     }
@@ -210,6 +262,11 @@ export class SnakeCoilGame implements GameModule {
     const ate = nextHead.x === this.orb.x && nextHead.y === this.orb.y;
     this.prevBody = this.body.map((c) => ({ ...c }));
     this.body = advance(this.body, this.dir, ate);
+
+    // Slow tiles bog the Coil down for a couple of ticks once stepped on.
+    if (this.slowSet.has(key(this.body[0]!))) this.slowSteps = SLOW_TILE_STEPS;
+    else if (this.slowSteps > 0) this.slowSteps -= 1;
+
     if (ate) {
       // Grow extra for prisms by appending the old tail again.
       const extra = orbGrowth(this.orbKind) - 1;
@@ -221,12 +278,14 @@ export class SnakeCoilGame implements GameModule {
   private onEat(): void {
     const kind = this.orbKind;
     this.orbs += 1;
+    if (this.wallSet.size > 0) this.hazardOrbs += 1;
 
     // Combo: chained if eaten within the window.
     this.combo = this.comboTimer > 0 ? this.combo + 1 : 1;
     this.maxCombo = Math.max(this.maxCombo, this.combo);
     this.comboTimer = COMBO_WINDOW;
 
+    const prevLevel = this.level;
     this.level = levelForOrbs(this.orbs);
     this.score += orbScore(kind, this.level, this.combo - 1, this.surgeActive);
     this.ctx.audio.playSfx(kind === 'prism' ? 'prism' : 'eat');
@@ -250,10 +309,12 @@ export class SnakeCoilGame implements GameModule {
 
     this.emitScore();
     this.spawnOrb();
+    // New level → re-roll the hazard layout (uses the freshly spawned orb).
+    if (this.level > prevLevel) this.regenerateHazards();
   }
 
   private spawnOrb(): void {
-    const pos = placeOrb(this.body, () => Math.random());
+    const pos = placeOrb([...this.body, ...this.walls], () => Math.random());
     if (!pos) {
       // Board full — vanishingly rare; end the run as a "perfect coil".
       this.endGame();
@@ -301,6 +362,7 @@ export class SnakeCoilGame implements GameModule {
         level: this.level,
         maxCombo: this.maxCombo,
         surges: this.surges,
+        hazardOrbs: this.hazardOrbs,
       },
     });
   }
@@ -346,6 +408,7 @@ export class SnakeCoilGame implements GameModule {
       g.stroke();
     }
 
+    this.drawHazards(g, ox, oy, cell);
     this.drawOrb(g, ox, oy, cell);
     this.drawCoil(g, ox, oy, cell, alpha);
 
@@ -393,6 +456,46 @@ export class SnakeCoilGame implements GameModule {
       g.textAlign = 'right';
       g.fillText(`COMBO x${this.combo}`, width - pad, barY + barH + 12);
       g.textAlign = 'left';
+    }
+  }
+
+  private drawHazards(g: CanvasRenderingContext2D, ox: number, oy: number, cell: number): void {
+    // Slow tiles first (flat, dim) so lethal walls read on top.
+    for (const s of this.slowTiles) {
+      const x = ox + s.x * cell;
+      const y = oy + s.y * cell;
+      const inset = Math.max(1, Math.floor(cell * 0.08));
+      g.fillStyle = 'rgba(59,108,255,0.22)';
+      g.fillRect(x + inset, y + inset, cell - inset * 2, cell - inset * 2);
+      g.strokeStyle = 'rgba(120,160,255,0.4)';
+      g.lineWidth = 1;
+      // Wavy "drag" marks.
+      g.beginPath();
+      g.moveTo(x + cell * 0.2, y + cell * 0.5);
+      g.lineTo(x + cell * 0.8, y + cell * 0.5);
+      g.stroke();
+    }
+    for (const w of this.walls) {
+      const x = ox + w.x * cell;
+      const y = oy + w.y * cell;
+      const inset = Math.max(1, Math.floor(cell * 0.06));
+      const size = cell - inset * 2;
+      const radius = Math.max(2, Math.floor(cell * 0.18));
+      g.fillStyle = WALL_COLOR;
+      g.shadowColor = WALL_COLOR;
+      g.shadowBlur = this.ctx.reducedMotion ? 0 : 7;
+      this.roundRect(g, x + inset, y + inset, size, size, radius);
+      g.fill();
+      g.shadowBlur = 0;
+      // Hazard hatch.
+      g.strokeStyle = 'rgba(20,11,43,0.6)';
+      g.lineWidth = Math.max(1, cell * 0.08);
+      g.beginPath();
+      g.moveTo(x + cell * 0.28, y + cell * 0.28);
+      g.lineTo(x + cell * 0.72, y + cell * 0.72);
+      g.moveTo(x + cell * 0.72, y + cell * 0.28);
+      g.lineTo(x + cell * 0.28, y + cell * 0.72);
+      g.stroke();
     }
   }
 

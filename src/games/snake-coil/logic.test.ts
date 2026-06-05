@@ -3,19 +3,25 @@ import {
   advance,
   COLS,
   freeCells,
+  HAZARD_FROM_LEVEL,
   hitsBody,
   hitsWall,
   initialSnake,
   isReverse,
+  key,
   levelForOrbs,
   opposite,
   orbGrowth,
   orbScore,
+  placeHazards,
   placeOrb,
   ROWS,
+  safetyZone,
+  slowCountForLevel,
   START_LENGTH,
   stepHead,
   tickInterval,
+  wallCountForLevel,
   type Vec,
 } from './logic';
 
@@ -124,6 +130,56 @@ describe('difficulty + scoring', () => {
   it('prisms grow the Coil more', () => {
     expect(orbGrowth('normal')).toBe(1);
     expect(orbGrowth('prism')).toBe(2);
+  });
+});
+
+describe('hazards (C.2)', () => {
+  it('keeps the board empty below the hazard level', () => {
+    for (let lv = 1; lv < HAZARD_FROM_LEVEL; lv += 1) {
+      expect(wallCountForLevel(lv)).toBe(0);
+      expect(slowCountForLevel(lv)).toBe(0);
+    }
+  });
+
+  it('grows the wall count with level but caps it', () => {
+    expect(wallCountForLevel(HAZARD_FROM_LEVEL)).toBe(2);
+    expect(wallCountForLevel(HAZARD_FROM_LEVEL + 1)).toBe(3);
+    expect(wallCountForLevel(50)).toBe(8);
+    // Never enough hazards to fill the board.
+    expect(wallCountForLevel(50) + slowCountForLevel(50)).toBeLessThan(COLS * ROWS);
+  });
+
+  it('safetyZone returns the cells straight ahead of the head', () => {
+    const zone = safetyZone({ x: 5, y: 5 }, 'up', 3);
+    expect(zone).toEqual([
+      { x: 5, y: 4 },
+      { x: 5, y: 3 },
+      { x: 5, y: 2 },
+    ]);
+  });
+
+  it('places distinct hazards on free cells, never on blocked ones', () => {
+    const snake = initialSnake();
+    const orb: Vec = { x: 0, y: 0 };
+    const blocked = [...snake, orb];
+    const hazards = placeHazards(5, blocked, () => 0.42);
+    expect(hazards).toHaveLength(5);
+    const blockedKeys = new Set(blocked.map(key));
+    const seen = new Set<string>();
+    for (const h of hazards) {
+      expect(hitsWall(h)).toBe(false);
+      expect(blockedKeys.has(key(h))).toBe(false);
+      expect(seen.has(key(h))).toBe(false); // distinct
+      seen.add(key(h));
+    }
+  });
+
+  it('never returns more cells than are free', () => {
+    // Block every cell but two.
+    const blocked: Vec[] = [];
+    for (let y = 0; y < ROWS; y += 1)
+      for (let x = 0; x < COLS; x += 1) if (!(y === 0 && x < 2)) blocked.push({ x, y });
+    expect(placeHazards(5, blocked, () => 0.9)).toHaveLength(2);
   });
 });
 

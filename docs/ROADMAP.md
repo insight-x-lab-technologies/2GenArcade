@@ -105,9 +105,17 @@ espaço), ciclo dia↔noite, 10 power-ups, 30 troféus, score por distância.
     `reducedMotion`); partículas de explosão.
   - Troféus novos: "primeiro míssil", "X inimigos numa explosão".
 
-### B2. Mini-chefes nas transições de bioma — `P1` · `L`
+### B2. Mini-chefes nas transições de bioma — `P1` · `L` — ✅ FEITO (2026-06-05)
 - A cada mudança de bioma, um gunship-chefe com padrão de tiro e HP alto.
   Recompensa grande + power-up garantido. Dá ritmo a um jogo hoje "infinito plano".
+- **Implementado:** entidade de chefe única e aditiva (sem chefe = comportamento
+  atual idêntico) que entra pelo topo a cada transição de bioma (índice ≥ 1), com
+  HP/recompensa escalando por bioma. Padrões de tiro (leque + rajada mirada,
+  reusando o fluxo de `enemyBullets`), colisão com tiro/míssil/jogador, abate dá
+  pontos altos + **power-up garantido** + barra de HP. Spawn de inimigos comuns
+  pausa enquanto o chefe está em cena. Helpers puros testados (`bossDueForIndex`,
+  `bossHpForIndex`, `bossRewardForIndex`); troféus **Senhor da guerra** (1 chefe)
+  e **Soberano** (5 numa partida).
 
 ### B3. Variedade de combate — `P1` · `M`
 - Formações de inimigos (V, ondas, kamikazes), não só spawn aleatório.
@@ -131,9 +139,17 @@ espaço), ciclo dia↔noite, 10 power-ups, 30 troféus, score por distância.
   (antes auto), permitindo guardar a travessia para quando a Espiral se encurrala.
   Indicador "DESCARGA PRONTA" pulsa no HUD.
 
-### C.2. Hazards e variedade de mapa — `P1` · `M`
+### C.2. Hazards e variedade de mapa — `P1` · `M` — ✅ FEITO (2026-06-05, paredes + tiles de lentidão)
 - Paredes internas/obstáculos móveis, portais (entra de um lado, sai do outro),
   tiles de lentidão. Modos "com parede" vs "wrap-around" selecionáveis.
+- **Implementado:** a partir do nível 3 surgem **paredes internas letais**
+  (vermelhas; a Descarga não atravessa) e **ladrilhos de lentidão** (azuis;
+  deixam a Espiral lenta por alguns ticks), re-roladas a cada nível e posicionadas
+  longe da cabeça (zona de segurança) e do orbe — nunca uma armadilha inevitável.
+  Os orbes nunca nascem sob paredes. Lógica de colocação pura e testada
+  (`placeHazards`/`safetyZone`/`wallCountForLevel`/`slowCountForLevel`); troféu
+  **Desbravador** (12 orbes com obstáculos no tabuleiro). Portais e o seletor
+  wrap-around ficaram de fora desta primeira versão (deferidos).
 
 ### C.3. Orbs especiais — `P2` · `S`
 - Orb de encolher, ímã (atrai orbs por alguns segundos), x2 temporário,

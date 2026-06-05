@@ -50,5 +50,12 @@ export const snakeCoilMeta: GameMeta = {
       icon: '👑',
       condition: (c) => c.score >= 5000,
     },
+    {
+      id: 'pathfinder',
+      nameKey: 'snakeCoil:trophies.pathfinder.name',
+      descriptionKey: 'snakeCoil:trophies.pathfinder.description',
+      icon: '🧭',
+      condition: (c) => (c.stats.hazardOrbs ?? 0) >= 12,
+    },
   ],
 };

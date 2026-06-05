@@ -179,6 +179,29 @@ export const pickEnemyKind = (distance: number, rand: number): EnemyKind => {
   return 'drone';
 };
 
+// --- Mini-boss (B2) ------------------------------------------------------------
+// A gunship-boss guards each biome transition. It is a single, additive entity:
+// when no boss is active the game plays exactly as before. Spawn scheduling, HP
+// and reward are pure functions of the biome index, so they are unit-tested.
+
+export const BOSS_R = 11; // hull radius (field units)
+export const BOSS_HOLD_Y = 40; // y it settles at after entering from the top
+/** First boss appears at the first biome change (city → forest, index 1). */
+export const BOSS_MIN_INDEX = 1;
+
+/** Boss HP, scaling with each biome cleared. */
+export const bossHpForIndex = (index: number): number =>
+  30 + Math.max(0, index - BOSS_MIN_INDEX) * 16;
+
+/** Score reward for downing the boss, scaling with each biome cleared. */
+export const bossRewardForIndex = (index: number): number =>
+  1500 + Math.max(0, index - BOSS_MIN_INDEX) * 800;
+
+/** A boss is due when we cross into `index` (past the last one we spawned for)
+ *  at or beyond BOSS_MIN_INDEX. Pure so the spawn schedule is testable. */
+export const bossDueForIndex = (index: number, lastSpawnedIndex: number): boolean =>
+  index >= BOSS_MIN_INDEX && index > lastSpawnedIndex;
+
 // --- Power-ups -----------------------------------------------------------------
 
 export type PowerKind =

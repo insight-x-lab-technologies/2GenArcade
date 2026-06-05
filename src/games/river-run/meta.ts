@@ -27,6 +27,9 @@ const TROPHIES: Array<[string, string, TrophyCondition]> = [
   // Missiles (secondary weapon).
   ['warmonger', '🚀', (c) => stat('missiles')(c) >= 1],
   ['demolitionist', '💥', (c) => stat('missileKills')(c) >= 8],
+  // Mini-bosses (B2).
+  ['warlord', '🛡️', (c) => stat('bossKills')(c) >= 1],
+  ['overlord', '⚔️', (c) => stat('bossKills')(c) >= 5],
   // Power-up first uses (10).
   ['ironclad', '🛡️', (c) => stat('usedShield')(c) >= 1],
   ['lightspeed', '🚀', (c) => stat('usedSuperSpeed')(c) >= 1],

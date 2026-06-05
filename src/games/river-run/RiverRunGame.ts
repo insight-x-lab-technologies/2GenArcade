@@ -7,6 +7,11 @@ import {
   type EnemyKind,
   type PowerKind,
   biomeAt,
+  BOSS_HOLD_Y,
+  BOSS_R,
+  bossDueForIndex,
+  bossHpForIndex,
+  bossRewardForIndex,
   channelAt,
   circleHit,
   ENEMIES,
@@ -58,6 +63,12 @@ const MISSILE_DAMAGE = 5; // damage to every ship caught in the blast
 const MISSILE_COOLDOWN = 0.18; // min seconds between launches
 const MISSILE_DETONATE_Y = 14; // detonate near the top if it hits nothing
 
+// Mini-boss (B2). Reuses the enemy-bullet stream so player collisions are shared.
+const BOSS_ID = -1; // reserved pierce-tracking id (enemy ids start at 1)
+const BOSS_DESCENT = 26; // units/s while entering from the top
+const BOSS_FIRE_INTERVAL = 1.15;
+const BOSS_BULLET_SPREAD = 34;
+
 interface Bullet {
   x: number;
   y: number;
@@ -104,6 +115,20 @@ interface Tank {
   hp: number;
   hitFlash: number;
   tapped: boolean;
+}
+interface Boss {
+  x: number;
+  y: number;
+  prevX: number;
+  prevY: number;
+  hp: number;
+  maxHp: number;
+  index: number;
+  entering: boolean;
+  sway: number;
+  fireTimer: number;
+  pattern: number;
+  hitFlash: number;
 }
 interface PowerUp {
   kind: PowerKind;
@@ -205,6 +230,12 @@ export class RiverRunGame implements GameModule {
   private stars: Star[] = [];
   private nextId = 1;
 
+  // Mini-boss (B2): one at a time, spawned at biome transitions.
+  private boss: Boss | null = null;
+  private bossSpawnedIndex = -1;
+  private lastBiomeIndex = 0;
+  private bossKills = 0;
+
   private fireTimer = 0;
   private missileAmmo = MISSILE_START;
   private missileRegenTimer = 0;
@@ -287,6 +318,10 @@ export class RiverRunGame implements GameModule {
     this.powerups = [];
     this.particles = [];
     this.nextId = 1;
+    this.boss = null;
+    this.bossSpawnedIndex = -1;
+    this.lastBiomeIndex = 0;
+    this.bossKills = 0;
     this.fireTimer = 0;
     this.missileAmmo = MISSILE_START;
     this.missileRegenTimer = 0;
@@ -365,6 +400,10 @@ export class RiverRunGame implements GameModule {
     }
     for (const t of this.tanks) t.prevY = t.y;
     for (const p of this.powerups) p.prevY = p.y;
+    if (this.boss) {
+      this.boss.prevX = this.boss.x;
+      this.boss.prevY = this.boss.y;
+    }
 
     // Biome + time of day (pure functions of distance).
     const biome = biomeAt(this.distance);
@@ -380,6 +419,15 @@ export class RiverRunGame implements GameModule {
       this.nightSeen = true;
       this.award('nightOwl');
     }
+
+    // Mini-boss at biome transitions (B2): spawn once per new biome index.
+    if (biome.index !== this.lastBiomeIndex) {
+      this.lastBiomeIndex = biome.index;
+      if (!this.boss && bossDueForIndex(biome.index, this.bossSpawnedIndex)) {
+        this.spawnBoss(biome.index);
+      }
+    }
+    if (this.boss) this.updateBoss(dt, this.active('slowmo') ? SLOWMO_FACTOR : 1);
 
     // Throttle: up = boost, down = brake.
     const boost = input.isHeld('up');
@@ -519,11 +567,114 @@ export class RiverRunGame implements GameModule {
       t.hitFlash = 1;
       if (t.hp <= 0) this.spawnExplosion(t.x, t.y, '#46d4c4');
     }
+    if (this.boss && circleHit(x, y, MISSILE_BLAST_R, this.boss.x, this.boss.y, BOSS_R)) {
+      this.boss.hp -= MISSILE_DAMAGE;
+      this.boss.hitFlash = 1;
+      if (this.boss.hp <= 0) {
+        this.missileKills += 1;
+        this.killBoss(scoreMul);
+      }
+    }
+  }
+
+  // ---- Mini-boss (B2) -------------------------------------------------------
+
+  private spawnBoss(index: number): void {
+    const ch = channelAt(worldYAt(this.distance, BOSS_HOLD_Y));
+    const hp = bossHpForIndex(index);
+    this.boss = {
+      x: ch.center,
+      y: -BOSS_R,
+      prevX: ch.center,
+      prevY: -BOSS_R,
+      hp,
+      maxHp: hp,
+      index,
+      entering: true,
+      sway: 0,
+      fireTimer: 1.4,
+      pattern: 0,
+      hitFlash: 0,
+    };
+    this.bossSpawnedIndex = index;
+    this.toast = this.ctx.i18n('riverRun:bossWarning');
+    this.toastColor = '#ff5db0';
+    this.toastTime = 1.8;
+    this.ctx.audio.playSfx('bigHit');
+    this.shake = Math.max(this.shake, this.ctx.reducedMotion ? 0 : 1.6);
+  }
+
+  private updateBoss(dt: number, slow: number): void {
+    const boss = this.boss;
+    if (!boss) return;
+    if (boss.hitFlash > 0) boss.hitFlash = Math.max(0, boss.hitFlash - dt * 4);
+    const ch = channelAt(worldYAt(this.distance, boss.y));
+    if (boss.entering) {
+      boss.y += BOSS_DESCENT * dt;
+      boss.x = ch.center;
+      if (boss.y >= BOSS_HOLD_Y) {
+        boss.y = BOSS_HOLD_Y;
+        boss.entering = false;
+      }
+      return;
+    }
+    // Sway across the channel, staying inside the walls.
+    boss.sway += dt * 0.9 * slow;
+    const amp = Math.max(0, ch.half - BOSS_R - 2);
+    boss.x = clamp(ch.center + Math.sin(boss.sway) * amp, BOSS_R, FIELD_W - BOSS_R);
+    // Alternate a downward fan with an aimed burst.
+    boss.fireTimer -= dt * slow;
+    if (boss.fireTimer <= 0) {
+      this.fireBossPattern(boss);
+      boss.pattern = (boss.pattern + 1) % 2;
+      boss.fireTimer = BOSS_FIRE_INTERVAL;
+    }
+  }
+
+  private fireBossPattern(boss: Boss): void {
+    const y = boss.y + BOSS_R;
+    const push = (vx: number): void => {
+      this.enemyBullets.push({ x: boss.x, y, prevX: boss.x, prevY: y, vx });
+    };
+    if (boss.pattern === 0) {
+      for (let i = -2; i <= 2; i += 1) push(i * (BOSS_BULLET_SPREAD / 2));
+    } else {
+      const aim = clamp((this.px - boss.x) * 0.8, -34, 34);
+      push(aim - 12);
+      push(aim);
+      push(aim + 12);
+    }
+    this.ctx.audio.playSfx('enemyShoot');
+  }
+
+  private killBoss(scoreMul: number): void {
+    const boss = this.boss;
+    if (!boss) return;
+    this.boss = null;
+    this.bossKills += 1;
+    this.kills += 1;
+    this.bigKills += 1;
+    this.bonus += bossRewardForIndex(boss.index) * scoreMul;
+    this.spawnExplosion(boss.x, boss.y, '#ff5db0');
+    this.spawnExplosion(boss.x, boss.y, '#ffd27a');
+    this.setFlash('#ff5db0', 0.7);
+    this.shake = Math.max(this.shake, this.ctx.reducedMotion ? 0 : 3.2);
+    this.ctx.audio.playSfx('bigBoom');
+    // Guaranteed power-up reward for downing the boss.
+    this.powerups.push({
+      kind: pickPowerKind(Math.random()),
+      x: boss.x,
+      y: boss.y,
+      prevY: boss.y,
+    });
+    this.award('warlord');
   }
 
   private spawnTimers(dt: number): void {
+    // Hold regular enemy spawns while a boss is on screen so the duel reads clean
+    // (fuel tanks + power-ups keep coming).
     this.enemyTimer -= dt;
-    if (this.enemyTimer <= 0) {
+    if (this.enemyTimer <= 0 && !this.boss) {
       const kind = pickEnemyKind(this.distance, Math.random());
       const spec = ENEMIES[kind];
       const ch = channelAt(worldYAt(this.distance, -spec.r));
@@ -646,6 +797,9 @@ export class RiverRunGame implements GameModule {
           }
         }
       }
+      if (!detonate && this.boss && circleHit(m.x, m.y, 2, this.boss.x, this.boss.y, BOSS_R)) {
+        detonate = true;
+      }
       if (detonate) {
         this.explodeMissile(m.x, m.y, scoreMul);
         this.missiles.splice(i, 1);
@@ -674,6 +828,25 @@ export class RiverRunGame implements GameModule {
       }
     }
     this.enemies = this.enemies.filter((e) => e.hp > 0);
+
+    // Bullets vs boss.
+    if (this.boss) {
+      const boss = this.boss;
+      for (let j = this.bullets.length - 1; j >= 0; j -= 1) {
+        const b = this.bullets[j]!;
+        if (b.hit && b.hit.has(BOSS_ID)) continue;
+        if (!circleHit(boss.x, boss.y, BOSS_R, b.x, b.y, 1.6)) continue;
+        boss.hp -= 1;
+        boss.hitFlash = 1;
+        if (b.pierce && b.hit) b.hit.add(BOSS_ID);
+        else this.bullets.splice(j, 1);
+        if (boss.hp <= 0) {
+          this.killBoss(scoreMul);
+          break;
+        }
+        this.ctx.audio.playSfx('bigHit');
+      }
+    }
 
     // Bullets vs fuel tanks (destructible — careful not to pop your own fuel).
     for (const t of this.tanks) {
@@ -705,6 +878,19 @@ export class RiverRunGame implements GameModule {
       }
     }
     this.enemies = this.enemies.filter((e) => e.hp > 0);
+
+    // Player vs boss hull (lethal unless shielded — the shield chips its HP).
+    if (this.boss && circleHit(this.px, PLAYER_Y, PLAYER_R, this.boss.x, this.boss.y, BOSS_R)) {
+      if (shield) {
+        this.boss.hp -= MISSILE_DAMAGE;
+        this.boss.hitFlash = 1;
+        if (this.boss.hp <= 0) this.killBoss(scoreMul);
+      } else {
+        this.spawnExplosion(this.px, PLAYER_Y, '#ffd27a');
+        this.endGame();
+        return;
+      }
+    }
 
     // Player vs enemy bullets.
     for (let j = this.enemyBullets.length - 1; j >= 0; j -= 1) {
@@ -838,6 +1024,7 @@ export class RiverRunGame implements GameModule {
         boosts: this.boosts,
         missiles: this.missilesFired,
         missileKills: this.missileKills,
+        bossKills: this.bossKills,
         powerups: this.powerupsCollected,
         usedShield: this.usedKinds.has('shield') ? 1 : 0,
         usedSuperSpeed: this.usedKinds.has('superSpeed') ? 1 : 0,
@@ -887,6 +1074,7 @@ export class RiverRunGame implements GameModule {
     this.drawTanks(g, X, Y, s, alpha, night);
     this.drawPowerups(g, X, Y, s, alpha);
     this.drawEnemies(g, X, Y, s, alpha, night);
+    if (this.boss) this.drawBoss(g, X, Y, s, alpha, night);
     this.drawEnemyBullets(g, X, Y, s, alpha);
     this.drawBullets(g, X, Y, s, alpha);
     this.drawMissiles(g, X, Y, s, alpha);
@@ -1098,6 +1286,63 @@ export class RiverRunGame implements GameModule {
         }
       }
     }
+  }
+
+  private drawBoss(
+    g: CanvasRenderingContext2D,
+    X: (x: number) => number,
+    Y: (y: number) => number,
+    s: number,
+    alpha: number,
+    night: number,
+  ): void {
+    const boss = this.boss;
+    if (!boss) return;
+    const x = lerp(boss.prevX, boss.x, alpha);
+    const y = lerp(boss.prevY, boss.y, alpha);
+    const cx = X(x);
+    const cy = Y(y);
+    const r = BOSS_R * s;
+    const base = '#ff5db0';
+    g.save();
+    g.translate(cx, cy);
+    g.fillStyle = boss.hitFlash > 0 ? '#ffffff' : darken(base, night * 0.5);
+    g.shadowColor = base;
+    g.shadowBlur = boss.hitFlash > 0 ? 22 : 14;
+    g.beginPath();
+    g.moveTo(0, -r);
+    g.lineTo(r, -r * 0.25);
+    g.lineTo(r * 0.7, r * 0.7);
+    g.lineTo(0, r * 0.45);
+    g.lineTo(-r * 0.7, r * 0.7);
+    g.lineTo(-r, -r * 0.25);
+    g.closePath();
+    g.fill();
+    g.shadowBlur = 0;
+    // Glowing core.
+    g.fillStyle = '#2a0a1e';
+    g.beginPath();
+    g.arc(0, 0, r * 0.34, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = boss.hitFlash > 0 ? '#ffffff' : '#ffd27a';
+    g.beginPath();
+    g.arc(0, 0, r * 0.17, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+
+    // HP bar low on the field, clear of the top fuel HUD.
+    const barX = X(8);
+    const barW = (FIELD_W - 16) * s;
+    const barY = Y(FIELD_H - 6);
+    const barH = 2.6 * s;
+    const ratio = clamp(boss.hp / boss.maxHp, 0, 1);
+    g.fillStyle = 'rgba(20,11,43,0.85)';
+    g.fillRect(barX, barY, barW, barH);
+    g.fillStyle = base;
+    g.fillRect(barX, barY, barW * ratio, barH);
+    g.strokeStyle = 'rgba(255,255,255,0.28)';
+    g.lineWidth = 1;
+    g.strokeRect(barX + 0.5, barY + 0.5, barW, barH);
   }
 
   private drawEnemyBullets(
