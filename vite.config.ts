@@ -3,7 +3,12 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Served from a GitHub Pages project path: https://<user>.github.io/2GenArcade/.
+// Every absolute asset/PWA URL must carry this base prefix.
+const base = '/2GenArcade/';
+
 export default defineConfig({
+  base,
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -16,7 +21,7 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'robots.txt'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        navigateFallback: '/index.html',
+        navigateFallback: `${base}index.html`,
         cleanupOutdatedCaches: true,
       },
       manifest: {
@@ -28,8 +33,8 @@ export default defineConfig({
         background_color: '#0d0820',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
