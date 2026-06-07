@@ -68,7 +68,7 @@ const DEFAULT_SETTINGS: Settings = {
   crtEnabled: true,
   haptics: true,
   clickSound: true,
-  language: 'pt-BR',
+  language: 'en',
   controlStyle: 'dpad',
 };
 

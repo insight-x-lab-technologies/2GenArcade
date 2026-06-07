@@ -21,7 +21,7 @@ export function initI18n(): typeof i18n {
     .use(initReactI18next)
     .init({
       resources,
-      fallbackLng: 'pt-BR',
+      fallbackLng: 'en',
       // Region codes resolve via i18next's hierarchy (en-US -> en); 'dev' keeps
       // i18next's internal default language supported.
       // NOTE: do NOT enable nonExplicitSupportedLngs — combined with the

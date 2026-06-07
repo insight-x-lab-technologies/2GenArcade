@@ -27,8 +27,8 @@ export default defineConfig({
       manifest: {
         name: '2GenArcade',
         short_name: '2GenArcade',
-        description: 'Fliperama de bolso: jogos arcade retrô originais.',
-        lang: 'pt-BR',
+        description: 'Pocket arcade: original retro arcade games.',
+        lang: 'en',
         theme_color: '#1a1030',
         background_color: '#0d0820',
         display: 'standalone',
