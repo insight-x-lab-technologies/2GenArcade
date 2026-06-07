@@ -202,6 +202,47 @@ export const bossRewardForIndex = (index: number): number =>
 export const bossDueForIndex = (index: number, lastSpawnedIndex: number): boolean =>
   index >= BOSS_MIN_INDEX && index > lastSpawnedIndex;
 
+// --- Enemy formations (B3) -----------------------------------------------------
+// Coordinated squads break up the random spawn stream. A formation is just a set
+// of relative slot offsets the game places enemies at; layouts are pure so they
+// are deterministic and unit-tested. Below FORMATION_MIN_DISTANCE the stream is
+// the same single-spawn flow as before — this only adds an occasional alternate.
+
+export type FormationKind = 'vee' | 'wave';
+
+/** No formations before this distance (early game stays gentle). */
+export const FORMATION_MIN_DISTANCE = 700;
+
+/** Probability a given spawn slot becomes a formation, ramping with distance. */
+export const formationChance = (distance: number): number =>
+  distance < FORMATION_MIN_DISTANCE ? 0 : Math.min(0.12 + distance * 0.00002, 0.32);
+
+export interface FormationSlot {
+  /** Horizontal offset from the squad centre (field units). */
+  dx: number;
+  /** Extra distance above the lead ship (field units), so they enter staggered. */
+  dy: number;
+}
+
+/** Relative slots for an `n`-ship formation. `vee` is a downward arrow; `wave`
+ *  is a staggered horizontal line. Pure for testability. */
+export const formationSlots = (kind: FormationKind, n: number): FormationSlot[] => {
+  const slots: FormationSlot[] = [];
+  if (kind === 'vee') {
+    const half = Math.floor(n / 2);
+    for (let i = 0; i < n; i += 1) {
+      const k = i - half;
+      slots.push({ dx: k * 7, dy: Math.abs(k) * 6 });
+    }
+  } else {
+    const half = (n - 1) / 2;
+    for (let i = 0; i < n; i += 1) {
+      slots.push({ dx: (i - half) * 9, dy: (i % 2) * 5 });
+    }
+  }
+  return slots;
+};
+
 // --- Power-ups -----------------------------------------------------------------
 
 export type PowerKind =

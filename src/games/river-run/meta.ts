@@ -30,6 +30,8 @@ const TROPHIES: Array<[string, string, TrophyCondition]> = [
   // Mini-bosses (B2).
   ['warlord', '🛡️', (c) => stat('bossKills')(c) >= 1],
   ['overlord', '⚔️', (c) => stat('bossKills')(c) >= 5],
+  // Formations (B3).
+  ['interceptor', '🦅', (c) => stat('diverKills')(c) >= 10],
   // Power-up first uses (10).
   ['ironclad', '🛡️', (c) => stat('usedShield')(c) >= 1],
   ['lightspeed', '🚀', (c) => stat('usedSuperSpeed')(c) >= 1],

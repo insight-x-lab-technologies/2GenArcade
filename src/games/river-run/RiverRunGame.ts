@@ -5,6 +5,7 @@ import {
   type BiomeId,
   type DayPhase,
   type EnemyKind,
+  type FormationKind,
   type PowerKind,
   biomeAt,
   BOSS_HOLD_Y,
@@ -18,6 +19,9 @@ import {
   enemySpawnInterval,
   FIELD_H,
   FIELD_W,
+  FORMATION_MIN_DISTANCE,
+  formationChance,
+  formationSlots,
   fuelDrain,
   FUEL_BONUS,
   FUEL_MAX,
@@ -69,6 +73,9 @@ const BOSS_DESCENT = 26; // units/s while entering from the top
 const BOSS_FIRE_INTERVAL = 1.15;
 const BOSS_BULLET_SPREAD = 34;
 
+// Formations (B3): kamikaze ships steer toward the player's column as they dive.
+const DIVE_STEER = 30; // horizontal units/s a diver tracks the player
+
 interface Bullet {
   x: number;
   y: number;
@@ -107,6 +114,8 @@ interface Enemy {
   spin: number;
   fireTimer: number;
   hitFlash: number;
+  /** Kamikaze: steers toward the player as it descends (B3 formations). */
+  dive: boolean;
 }
 interface Tank {
   x: number;
@@ -235,6 +244,7 @@ export class RiverRunGame implements GameModule {
   private bossSpawnedIndex = -1;
   private lastBiomeIndex = 0;
   private bossKills = 0;
+  private diverKills = 0;
 
   private fireTimer = 0;
   private missileAmmo = MISSILE_START;
@@ -322,6 +332,7 @@ export class RiverRunGame implements GameModule {
     this.bossSpawnedIndex = -1;
     this.lastBiomeIndex = 0;
     this.bossKills = 0;
+    this.diverKills = 0;
     this.fireTimer = 0;
     this.missileAmmo = MISSILE_START;
     this.missileRegenTimer = 0;
@@ -670,32 +681,65 @@ export class RiverRunGame implements GameModule {
     this.award('warlord');
   }
 
+  /** Spawn one enemy of `kind` at `x`, `yOffset` field units above the top.
+   *  Shared by the single-spawn and formation paths. */
+  private pushEnemy(kind: EnemyKind, x: number, yOffset: number, dive: boolean): void {
+    const spec = ENEMIES[kind];
+    const y = -spec.r - yOffset;
+    this.enemies.push({
+      id: this.nextId++,
+      kind,
+      x: clamp(x, spec.r, FIELD_W - spec.r),
+      y,
+      prevY: y,
+      r: spec.r,
+      hp: spec.hp,
+      maxHp: spec.hp,
+      points: spec.points,
+      speedMul: spec.speedMul,
+      shoots: spec.shoots,
+      big: spec.big,
+      spin: 0,
+      fireTimer: 0.8 + Math.random() * 1.2,
+      hitFlash: 0,
+      dive,
+    });
+  }
+
+  /** A coordinated squad of light ships (B3): a downward vee or a staggered
+   *  wave, sometimes kamikaze divers that track the player. */
+  private spawnFormation(): void {
+    const kind: FormationKind = Math.random() < 0.5 ? 'vee' : 'wave';
+    const n = 3 + Math.floor(Math.random() * 3); // 3..5 ships
+    const dive = kind === 'vee' && Math.random() < 0.5;
+    const shipKind: EnemyKind = Math.random() < 0.5 ? 'scout' : 'drone';
+    const r = ENEMIES[shipKind].r;
+    const slots = formationSlots(kind, n);
+    const spread = Math.max(...slots.map((s) => Math.abs(s.dx))) + r;
+    const ch = channelAt(worldYAt(this.distance, -r));
+    const room = Math.max(0, ch.half - spread - 1);
+    const cx = ch.center + (Math.random() * 2 - 1) * room;
+    for (const slot of slots) this.pushEnemy(shipKind, cx + slot.dx, slot.dy, dive);
+  }
+
   private spawnTimers(dt: number): void {
     // Hold regular enemy spawns while a boss is on screen so the duel reads clean
     // (fuel tanks + power-ups keep coming).
     this.enemyTimer -= dt;
     if (this.enemyTimer <= 0 && !this.boss) {
-      const kind = pickEnemyKind(this.distance, Math.random());
-      const spec = ENEMIES[kind];
-      const ch = channelAt(worldYAt(this.distance, -spec.r));
-      const x = ch.center + (Math.random() * 2 - 1) * (ch.half - spec.r - 1);
-      this.enemies.push({
-        id: this.nextId++,
-        kind,
-        x,
-        y: -spec.r,
-        prevY: -spec.r,
-        r: spec.r,
-        hp: spec.hp,
-        maxHp: spec.hp,
-        points: spec.points,
-        speedMul: spec.speedMul,
-        shoots: spec.shoots,
-        big: spec.big,
-        spin: 0,
-        fireTimer: 0.8 + Math.random() * 1.2,
-        hitFlash: 0,
-      });
+      // Occasionally a coordinated squad replaces the single random spawn (B3).
+      if (
+        this.distance >= FORMATION_MIN_DISTANCE &&
+        Math.random() < formationChance(this.distance)
+      ) {
+        this.spawnFormation();
+      } else {
+        const kind = pickEnemyKind(this.distance, Math.random());
+        const spec = ENEMIES[kind];
+        const ch = channelAt(worldYAt(this.distance, -spec.r));
+        const x = ch.center + (Math.random() * 2 - 1) * (ch.half - spec.r - 1);
+        this.pushEnemy(kind, x, 0, false);
+      }
       this.enemyTimer = enemySpawnInterval(this.distance) * (0.7 + Math.random() * 0.6);
     }
 
@@ -741,6 +785,14 @@ export class RiverRunGame implements GameModule {
     for (const e of this.enemies) {
       e.y += (speed * ENEMY_REL + ENEMY_EXTRA) * e.speedMul * slow * dt;
       e.spin += dt * 4;
+      // Kamikaze divers track the player's column on the way down.
+      if (e.dive) {
+        e.x = clamp(
+          e.x + clamp(this.px - e.x, -1, 1) * DIVE_STEER * slow * dt,
+          e.r,
+          FIELD_W - e.r,
+        );
+      }
       if (e.hitFlash > 0) e.hitFlash = Math.max(0, e.hitFlash - dt * 4);
       if (e.shoots) {
         e.fireTimer -= dt * slow;
@@ -942,6 +994,7 @@ export class RiverRunGame implements GameModule {
     e.hp = 0;
     this.kills += 1;
     if (e.big) this.bigKills += 1;
+    if (e.dive) this.diverKills += 1;
     this.bonus += e.points * scoreMul;
     // Missile kills share one big blast/boom, so skip the per-ship FX.
     if (!silent) {
@@ -1025,6 +1078,7 @@ export class RiverRunGame implements GameModule {
         missiles: this.missilesFired,
         missileKills: this.missileKills,
         bossKills: this.bossKills,
+        diverKills: this.diverKills,
         powerups: this.powerupsCollected,
         usedShield: this.usedKinds.has('shield') ? 1 : 0,
         usedSuperSpeed: this.usedKinds.has('superSpeed') ? 1 : 0,
@@ -1240,12 +1294,14 @@ export class RiverRunGame implements GameModule {
       const r = e.r * s;
       const base = ENEMY_COLORS[e.kind];
       const color = e.hitFlash > 0 ? '#ffffff' : darken(base, night * 0.6);
+      // Kamikaze divers glow red so the threat reads at a glance.
+      const glow = e.dive ? '#ff3b30' : base;
       g.save();
       g.translate(cx, cy);
       if (!this.ctx.reducedMotion && !e.big) g.rotate(e.spin);
       g.fillStyle = color;
-      g.shadowColor = base;
-      g.shadowBlur = e.hitFlash > 0 ? 16 : night > 0.4 ? 10 : 6;
+      g.shadowColor = glow;
+      g.shadowBlur = e.hitFlash > 0 ? 16 : e.dive ? 12 : night > 0.4 ? 10 : 6;
       if (e.big) {
         // Rounded heavy hull with wings.
         g.beginPath();

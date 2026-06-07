@@ -262,6 +262,7 @@ export const en: AppResources = {
       demolitionist: { name: 'Demolitionist', description: 'Destroy 8 ships with missiles in one run.' },
       warlord: { name: 'Warlord', description: 'Defeat a biome boss.' },
       overlord: { name: 'Overlord', description: 'Defeat 5 bosses in one run.' },
+      interceptor: { name: 'Interceptor', description: 'Destroy 10 kamikazes in one run.' },
       ironclad: { name: 'Ironclad', description: 'Use Invincibility.' },
       lightspeed: { name: 'Lightspeed', description: 'Use Super Speed.' },
       twinGuns: { name: 'Twin guns', description: 'Use Double Shot.' },

@@ -260,6 +260,7 @@ export const ptBR = {
       demolitionist: { name: 'Demolidor', description: 'Destrua 8 naves com mísseis em uma partida.' },
       warlord: { name: 'Senhor da guerra', description: 'Derrote um chefe de bioma.' },
       overlord: { name: 'Soberano', description: 'Derrote 5 chefes em uma partida.' },
+      interceptor: { name: 'Interceptador', description: 'Destrua 10 kamikazes em uma partida.' },
       ironclad: { name: 'Couraçado', description: 'Use a Invencibilidade.' },
       lightspeed: { name: 'Velocidade da luz', description: 'Use a Super Velocidade.' },
       twinGuns: { name: 'Canhões gêmeos', description: 'Use o Tiro Duplo.' },

@@ -117,9 +117,17 @@ espaço), ciclo dia↔noite, 10 power-ups, 30 troféus, score por distância.
   `bossHpForIndex`, `bossRewardForIndex`); troféus **Senhor da guerra** (1 chefe)
   e **Soberano** (5 numa partida).
 
-### B3. Variedade de combate — `P1` · `M`
+### B3. Variedade de combate — `P1` · `M` — ✅ FEITO (2026-06-05, formações + kamikazes)
 - Formações de inimigos (V, ondas, kamikazes), não só spawn aleatório.
 - Power-up "wingman" (drone que atira junto), "bomba de tela".
+- **Implementado:** a partir de ~700 m, parte dos spawns vira um **esquadrão
+  coordenado** — **V** ou **onda** escalonada de naves leves (scout/drone) — com
+  probabilidade rampando com a distância (`formationChance`). Esquadrões em V
+  podem ser **kamikazes**: rastreiam a coluna do jogador ao descer (brilho
+  vermelho de aviso). Layouts puros e testados (`formationSlots`), spawn aditivo
+  (sem formação = fluxo de spawn único de antes; pausa sob o chefe). Troféu
+  **Interceptador** (10 kamikazes numa partida). Os power-ups wingman/bomba-de-
+  tela ficaram para uma segunda passada (deferidos, p/ não mexer no pool atual).
 
 ### B4. Polimento de feel — `P2` · `S`
 - Trilha do tiro/míssil distinta; tracer de bala; feedback de fuel baixo (pulso

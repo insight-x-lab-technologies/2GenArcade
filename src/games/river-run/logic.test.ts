@@ -10,6 +10,9 @@ import {
   channelAt,
   circleHit,
   DAY_LEG,
+  FORMATION_MIN_DISTANCE,
+  formationChance,
+  formationSlots,
   ENEMIES,
   ENEMY_KINDS,
   enemySpawnInterval,
@@ -176,6 +179,34 @@ describe('mini-boss (B2)', () => {
     expect(bossRewardForIndex(BOSS_MIN_INDEX + 2)).toBeGreaterThan(
       bossRewardForIndex(BOSS_MIN_INDEX),
     );
+  });
+});
+
+describe('enemy formations (B3)', () => {
+  it('stays disabled until the formation distance, then ramps and caps', () => {
+    expect(formationChance(0)).toBe(0);
+    expect(formationChance(FORMATION_MIN_DISTANCE - 1)).toBe(0);
+    expect(formationChance(FORMATION_MIN_DISTANCE)).toBeGreaterThan(0);
+    expect(formationChance(5000)).toBeGreaterThan(formationChance(FORMATION_MIN_DISTANCE));
+    expect(formationChance(1e9)).toBeLessThanOrEqual(0.32);
+  });
+
+  it('builds a symmetric vee centred on zero', () => {
+    const slots = formationSlots('vee', 5);
+    expect(slots).toHaveLength(5);
+    expect(slots.map((s) => s.dx)).toEqual([-14, -7, 0, 7, 14]);
+    // The lead ship sits lowest (dy 0), wings trail above.
+    expect(slots[2]!.dy).toBe(0);
+    expect(slots[0]!.dy).toBeGreaterThan(0);
+  });
+
+  it('builds a staggered horizontal wave', () => {
+    const slots = formationSlots('wave', 4);
+    expect(slots).toHaveLength(4);
+    // Centred: offsets sum to ~0.
+    expect(slots.reduce((s, c) => s + c.dx, 0)).toBeCloseTo(0);
+    // Alternating ships are staggered in y.
+    expect(new Set(slots.map((s) => s.dy)).size).toBeGreaterThan(1);
   });
 });
 
