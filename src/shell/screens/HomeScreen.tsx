@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { GameCard, StatusHeader } from '@/ui';
 import { CATALOG } from '@/data/catalog';
 import { PACKS } from '@/data/packs';
+import { APP_VERSION, STUDIO_NAME, STUDIO_COPYRIGHT_YEAR } from '../constants';
 import { useArcadeStore } from '../store';
 
 export function HomeScreen() {
@@ -21,6 +22,7 @@ export function HomeScreen() {
           <div className="flex items-center gap-1">
             <NavIcon glyph="🏆" label={t('navTrophies')} onClick={() => navigate({ name: 'trophies' })} />
             <NavIcon glyph="🛒" label={t('navStore')} onClick={() => navigate({ name: 'store' })} />
+            <NavIcon glyph="ℹ️" label={t('navAbout')} onClick={() => navigate({ name: 'about' })} />
             <NavIcon glyph="⚙️" label={t('navSettings')} onClick={() => navigate({ name: 'settings' })} />
           </div>
         }
@@ -63,6 +65,17 @@ export function HomeScreen() {
             </section>
           );
         })}
+
+        <button
+          type="button"
+          onClick={() => navigate({ name: 'about' })}
+          className="mt-2 w-full text-center font-mono text-[10px] leading-relaxed text-muted/60 transition-colors hover:text-muted"
+        >
+          <span className="block">{t('settingsVersion', { version: APP_VERSION })}</span>
+          <span className="block">
+            {t('aboutCopyright', { year: STUDIO_COPYRIGHT_YEAR, studio: STUDIO_NAME })}
+          </span>
+        </button>
       </main>
     </div>
   );

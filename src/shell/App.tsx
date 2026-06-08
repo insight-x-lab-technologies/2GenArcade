@@ -13,8 +13,9 @@ import { StoreScreen } from './screens/StoreScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TrophiesScreen } from './screens/TrophiesScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen';
+import { AboutScreen } from './screens/AboutScreen';
 
-const SHELL_MUSIC_ROUTES = new Set(['home', 'store', 'settings', 'trophies', 'leaderboard', 'gameover']);
+const SHELL_MUSIC_ROUTES = new Set(['home', 'store', 'settings', 'trophies', 'leaderboard', 'gameover', 'about']);
 
 export function App() {
   const { t } = useTranslation();
@@ -85,6 +86,8 @@ export function App() {
         return <TrophiesScreen {...(route.gameId ? { gameId: route.gameId } : {})} />;
       case 'leaderboard':
         return route.gameId ? <LeaderboardScreen gameId={route.gameId} /> : <HomeScreen />;
+      case 'about':
+        return <AboutScreen />;
       default:
         return <HomeScreen />;
     }

@@ -11,3 +11,4 @@ export { VirtualDpad } from './VirtualDpad';
 export { ActionButtons } from './ActionButtons';
 export { ZonePad } from './ZonePad';
 export { SwipeOverlay } from './SwipeOverlay';
+export { BrandIcon, type BrandName } from './BrandIcon';

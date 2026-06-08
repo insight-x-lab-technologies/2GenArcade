@@ -33,3 +33,10 @@ export {
   type HapticPattern,
 } from './haptics';
 export { setUiSoundEnabled, playClick } from './uiSound';
+export {
+  buildShareTarget,
+  SHARE_NETWORKS,
+  SHARE_LABELS,
+  type ShareNetwork,
+  type ShareTarget,
+} from './share';

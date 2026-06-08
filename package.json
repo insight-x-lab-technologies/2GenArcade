@@ -1,7 +1,7 @@
 {
   "name": "2genarcade",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Pocket arcade: a collection of original retro arcade games (PWA).",
   "scripts": {

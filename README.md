@@ -1,5 +1,7 @@
 # 2GenArcade
 
+**Version 1.0** · © 2026 Insight X Lab Game Studio. All rights reserved.
+
 **Pocket arcade** — a mobile-first PWA collection of *original* retro arcade
 games. No third-party brands, art, music, or layouts: every name, sprite, and
 sound is original. Built for portrait phones (~390px), installable, and fully

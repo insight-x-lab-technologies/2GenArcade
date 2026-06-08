@@ -22,7 +22,8 @@ export type RouteName =
   | 'store'
   | 'settings'
   | 'trophies'
-  | 'leaderboard';
+  | 'leaderboard'
+  | 'about';
 
 export interface Route {
   name: RouteName;

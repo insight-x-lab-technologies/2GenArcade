@@ -24,10 +24,7 @@ export function StoreScreen() {
 
   return (
     <ScreenShell title={t('storeTitle')} onBack={back}>
-      <p className="mb-4 font-mono text-xs text-muted">{t('storeSubtitle')}</p>
-      <p className="mb-5 rounded-arcade border border-violet/30 bg-violet/10 px-3 py-2 font-mono text-[10px] text-violet">
-        {t('storeMockNote')}
-      </p>
+      <p className="mb-5 font-mono text-xs text-muted">{t('storeSubtitle')}</p>
 
       <div className="flex flex-col gap-4">
         {PACKS.map((pack) => {
@@ -66,9 +63,14 @@ export function StoreScreen() {
                     ✓ {pack.free ? t('storeFree') : t('storeOwned')}
                   </span>
                 ) : (
-                  <ArcadeButton accent={pack.accent} onClick={() => void onBuy(pack.id)}>
-                    {t('storeBuy')}
-                  </ArcadeButton>
+                  <div className="flex items-center gap-3">
+                    <ArcadeButton accent={pack.accent} disabled onClick={() => void onBuy(pack.id)}>
+                      {t('storeBuy')}
+                    </ArcadeButton>
+                    <span className="font-mono text-[10px] uppercase tracking-wide text-muted">
+                      {t('common:comingSoon')}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>

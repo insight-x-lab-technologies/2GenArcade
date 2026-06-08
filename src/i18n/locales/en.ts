@@ -111,6 +111,22 @@ export const en: AppResources = {
     syncedToast: '{{count}} score(s) synced',
     trophyUnlocked: '🏆 Trophy: {{name}}',
     backendOfflineNote: 'Online leaderboard not configured — using local data.',
+    navAbout: 'About',
+    aboutTitle: 'About',
+    aboutStudioDescription:
+      'Insight X Lab Game Studio is an independent game development company focused on creating immersive, creative, and memorable gaming experiences. We combine innovation, storytelling, and strong visual identity to build games that connect players with unique worlds, strategic challenges, and unforgettable adventures.\n\nOur studio believes that great games are born from imagination, passion, and attention to detail. From concept design to gameplay mechanics, every project is crafted with the goal of delivering entertainment that feels both exciting and meaningful.',
+    aboutSupport: 'Support the studio',
+    aboutSupportHint:
+      'If you enjoy these games, you can help keep them free and ad-free. Every coffee fuels the next update. Thank you!',
+    aboutDonateCoffee: 'Buy me a coffee',
+    aboutDonateKofi: 'Support on Ko-fi',
+    aboutShare: 'Share the arcade',
+    aboutShareHint: 'Tell a friend — it opens your app of choice with a ready-made message.',
+    aboutShareVia: 'Share on {{network}}',
+    aboutShareCopied: 'Message copied — paste it in {{network}}',
+    aboutCopyright: '© {{year}} {{studio}}. All rights reserved.',
+    shareMessage:
+      'Check out 2GenArcade — a pocket arcade of original retro games. Free and playable in your browser!',
   },
   catalog: {
     gameTitles: {

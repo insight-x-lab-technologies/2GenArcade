@@ -109,6 +109,22 @@ export const ptBR = {
     syncedToast: '{{count}} pontuação(ões) sincronizada(s)',
     trophyUnlocked: '🏆 Troféu: {{name}}',
     backendOfflineNote: 'Ranking online não configurado — usando dados locais.',
+    navAbout: 'Sobre',
+    aboutTitle: 'Sobre',
+    aboutStudioDescription:
+      'A Insight X Lab Game Studio é uma desenvolvedora de jogos independente focada em criar experiências imersivas, criativas e memoráveis. Combinamos inovação, narrativa e uma identidade visual forte para construir jogos que conectam os jogadores a mundos únicos, desafios estratégicos e aventuras inesquecíveis.\n\nNosso estúdio acredita que grandes jogos nascem da imaginação, da paixão e da atenção aos detalhes. Do design do conceito às mecânicas de jogo, cada projeto é criado com o objetivo de entregar um entretenimento que seja, ao mesmo tempo, empolgante e significativo.',
+    aboutSupport: 'Apoie o estúdio',
+    aboutSupportHint:
+      'Se você curte estes jogos, ajude a mantê-los gratuitos e sem anúncios. Cada café impulsiona a próxima atualização. Obrigado!',
+    aboutDonateCoffee: 'Pague um café',
+    aboutDonateKofi: 'Apoie no Ko-fi',
+    aboutShare: 'Compartilhe o fliperama',
+    aboutShareHint: 'Conte para um amigo — abre o app escolhido com uma mensagem pronta.',
+    aboutShareVia: 'Compartilhar no {{network}}',
+    aboutShareCopied: 'Mensagem copiada — cole no {{network}}',
+    aboutCopyright: '© {{year}} {{studio}}. Todos os direitos reservados.',
+    shareMessage:
+      'Conheça o 2GenArcade — um fliperama de bolso com jogos retrô originais. Grátis e jogável no navegador!',
   },
   catalog: {
     gameTitles: {
